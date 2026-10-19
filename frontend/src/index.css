@@ -1,0 +1,115 @@
+/*
+ * Eco-Bot Builders — global styles.
+ * Dark educational theme: deep navy background, green + amber accents.
+ * Component styles live inline in each component; only globals belong here.
+ */
+
+:root {
+  --bg: #0d1b2a;
+  --bg-panel: #1b263b;
+  --bg-panel-alt: #22314a;
+  --border: #2c3e5c;
+  --text: #e8f1f8;
+  --text-muted: #8fa3bf;
+  --green: #2ecc71;
+  --green-dark: #27ae60;
+  --amber: #f39c12;
+  --blue: #3498db;
+  --gold: #f1c40f;
+  --red: #e74c3c;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--amber);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Custom scrollbars (WebKit + Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 8px;
+  border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--green-dark);
+}
+
+/* Shared keyframes used by inline-styled components */
+@keyframes eco-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes eco-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes eco-shimmer {
+  from { background-position: 0 0; }
+  to { background-position: 40px 0; }
+}
+
+@keyframes eco-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
