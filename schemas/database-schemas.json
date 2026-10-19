@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://eco-bot-builders.example.org/schemas/database-schemas.json",
+  "title": "Eco-Bot Builders - MongoDB Collection Schemas",
+  "description": "JSON Schema representation of the Mongoose models in backend/models/. Mongoose adds an ObjectId '_id' to every document; versionKey (__v) is disabled.",
+  "version": "1.0.0",
+  "database": "eco-bot-builders",
+  "relationships": [
+    {
+      "from": "students.roomPin",
+      "to": "classrooms.roomPin",
+      "type": "many-to-one",
+      "description": "Each student belongs to one classroom."
+    },
+    {
+      "from": "classrooms.studentIds[]",
+      "to": "students.studentId",
+      "type": "one-to-many",
+      "description": "Denormalised list of student ids ($addToSet on join)."
+    },
+    {
+      "from": "level_telemetry.studentId",
+      "to": "students.studentId",
+      "type": "many-to-one",
+      "description": "One telemetry document per level completion; replays create additional documents."
+    }
+  ],
+  "collections": {
+    "students": {
+      "mongooseModel": "Student",
+      "mongoCollectionName": "students",
+      "sourceFile": "backend/models/Student.js",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId (internal)."
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Public id used by clients. Default: uuidv4()."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 40,
+            "description": "Trimmed display name."
+          },
+          "roomPin": {
+            "type": "string",
+            "pattern": "^\\d{4}$"
+          },
+          "currentLevel": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1,
+            "description": "Highest unlocked level (only increases)."
+          },
+          "cleanTokensBalance": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "unlockedCosmetics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time",
+            "default": "Date.now"
+          },
+          "lastSeen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isConnected": {
+            "type": "boolean",
+            "default": false
+          },
+          "currentSocketId": {
+            "type": "string",
+            "description": "Internal (select:false). Used to ignore stale disconnects."
+          }
+        },
+        "required": [
+          "studentId",
+          "name"
+        ]
+      },
+      "indexes": [
+        {
+          "fields": {
+            "studentId": 1
+          },
+          "options": {
+            "unique": true
+          }
+        },
+        {
+          "fields": {
+            "roomPin": 1
+          },
+          "options": {}
+        },
+        {
+          "fields": {
+            "roomPin": 1,
+            "name": 1
+          },
+          "options": {
+            "unique": true
+          },
+          "note": "Compound unique index: a name is unique within a classroom, so re-joining with the same name resumes progress."
+        }
+      ]
+    },
+    "level_telemetry": {
+      "mongooseModel": "LevelTelemetry",
+      "mongoCollectionName": "leveltelemetries",
+      "note": "Mongoose pluralises the model name to 'leveltelemetries'; 'level_telemetry' is the logical name used in docs.",
+      "sourceFile": "backend/models/LevelTelemetry.js",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "MongoDB ObjectId; returned as telemetryId in acks."
+          },
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "levelId": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "retriesCount": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "timeSpentSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 86400
+          },
+          "subroutinesUsed": {
+            "type": "boolean",
+            "default": false
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "default": "Date.now"
+          },
+          "stemCompetencyScores": {
+            "type": "object",
+            "properties": {
+              "computationalThinking": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "systemicEngineering": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "mathModeling": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "persistence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "blockProgramSnapshot": {
+            "type": "array",
+            "maxItems": 500,
+            "items": {
+              "$ref": "unity-block-program-schema.json#/definitions/block"
+            },
+            "description": "Stored as Mixed[]; excluded from GET /api/telemetry/student/:id unless ?includeSnapshots=true."
+          }
+        },
+        "required": [
+          "studentId",
+          "levelId"
+        ]
+      },
+      "indexes": [
+        {
+          "fields": {
+            "studentId": 1,
+            "levelId": 1
+          },
+          "options": {},
+          "note": "Compound index supporting per-student progress lookups and per-level aggregation (non-unique because replays are recorded)."
+        }
+      ]
+    },
+    "classrooms": {
+      "mongooseModel": "Classroom",
+      "mongoCollectionName": "classrooms",
+      "sourceFile": "backend/models/Classroom.js",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "roomPin": {
+            "type": "string",
+            "pattern": "^\\d{4}$",
+            "minLength": 4,
+            "maxLength": 4
+          },
+          "teacherSocketId": {
+            "type": "string",
+            "description": "Socket id of the active teacher (unset on disconnect)."
+          },
+          "teacherName": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          },
+          "isPaused": {
+            "type": "boolean",
+            "default": false
+          },
+          "isMuted": {
+            "type": "boolean",
+            "default": false
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "default": "Date.now"
+          },
+          "studentIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "default": []
+          },
+          "communityProgress": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "description": "Cumulative class Clean Tokens (goal: 1000)."
+          }
+        },
+        "required": [
+          "roomPin"
+        ]
+      },
+      "indexes": [
+        {
+          "fields": {
+            "roomPin": 1
+          },
+          "options": {
+            "unique": true
+          }
+        }
+      ]
+    }
+  }
+}

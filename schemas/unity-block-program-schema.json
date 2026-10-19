@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://eco-bot-builders.example.org/schemas/unity-block-program-schema.json",
+  "title": "Eco-Bot Builders - Serialized Block Program",
+  "description": "A student's visual block program as serialized by the Unity BlockParserEngine and stored in LevelTelemetry.blockProgramSnapshot. The root is an ordered array of top-level blocks; nested blocks (loop bodies, if/else branches) live in 'children'. Note: children reference '#/definitions/block' (not the root '#'), because the root is an array and each child must be a single block object. The backend rejects snapshots with more than 500 top-level blocks.",
+  "type": "array",
+  "maxItems": 500,
+  "items": { "$ref": "#/definitions/block" },
+  "definitions": {
+    "blockType": {
+      "type": "string",
+      "enum": [
+        "TRIGGER_ALWAYS_LOOP",
+        "INPUT_MOISTURE_SENSOR",
+        "INPUT_BATTERY_CHARGE",
+        "CONDITION_IF",
+        "CONDITION_ELSE",
+        "SUBROUTINE_CALL",
+        "ACTION_MOVE",
+        "ACTION_WATER",
+        "ACTION_ROTATE_TURBINE",
+        "ACTION_CLEAN",
+        "ACTION_TURN",
+        "LOOP_REPEAT"
+      ],
+      "x-parameter-semantics": {
+        "TRIGGER_ALWAYS_LOOP": "null - runs children forever (until the level ends or the class is paused).",
+        "INPUT_MOISTURE_SENSOR": "number 0-1 threshold, used as the condition input of CONDITION_IF.",
+        "INPUT_BATTERY_CHARGE": "number 0-1 threshold, used as the condition input of CONDITION_IF.",
+        "CONDITION_IF": "string expression or null; the first child may be an INPUT_* block providing the condition.",
+        "CONDITION_ELSE": "null - must directly follow a CONDITION_IF sibling.",
+        "SUBROUTINE_CALL": "string subroutine name; children hold the subroutine body at its definition site.",
+        "ACTION_MOVE": "number of tiles to move forward (default 1).",
+        "ACTION_WATER": "number of water units (default 1) or null.",
+        "ACTION_ROTATE_TURBINE": "number of degrees (multiples of 90) or null for a single 90-degree step.",
+        "ACTION_CLEAN": "null.",
+        "ACTION_TURN": "string 'LEFT' or 'RIGHT'.",
+        "LOOP_REPEAT": "integer repeat count (1-20)."
+      }
+    },
+    "uiPosition": {
+      "type": "object",
+      "description": "Editor canvas placement in Unity UI units (RectTransform anchoredPosition and size).",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      },
+      "required": ["x", "y"],
+      "additionalProperties": false
+    },
+    "block": {
+      "type": "object",
+      "properties": {
+        "blockId": { "type": "string", "minLength": 1, "description": "Unique id of the block within the program." },
+        "blockType": { "$ref": "#/definitions/blockType" },
+        "parameter": { "type": ["string", "number", "null"], "default": null },
+        "children": {
+          "type": "array",
+          "default": [],
+          "items": { "$ref": "#/definitions/block" }
+        },
+        "uiPosition": { "$ref": "#/definitions/uiPosition" }
+      },
+      "required": ["blockId", "blockType"],
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    [
+      {
+        "blockId": "b1",
+        "blockType": "LOOP_REPEAT",
+        "parameter": 4,
+        "uiPosition": { "x": 40, "y": -20, "width": 220, "height": 120 },
+        "children": [
+          { "blockId": "b2", "blockType": "ACTION_MOVE", "parameter": 1, "children": [] },
+          { "blockId": "b3", "blockType": "ACTION_CLEAN", "parameter": null, "children": [] },
+          { "blockId": "b4", "blockType": "ACTION_TURN", "parameter": "RIGHT", "children": [] }
+        ]
+      }
+    ],
+    [
+      {
+        "blockId": "t1",
+        "blockType": "TRIGGER_ALWAYS_LOOP",
+        "parameter": null,
+        "children": [
+          {
+            "blockId": "c1",
+            "blockType": "CONDITION_IF",
+            "parameter": null,
+            "children": [
+              { "blockId": "s1", "blockType": "INPUT_MOISTURE_SENSOR", "parameter": 0.3, "children": [] },
+              { "blockId": "a1", "blockType": "ACTION_WATER", "parameter": 1, "children": [] }
+            ]
+          },
+          {
+            "blockId": "e1",
+            "blockType": "CONDITION_ELSE",
+            "parameter": null,
+            "children": [
+              { "blockId": "a2", "blockType": "ACTION_MOVE", "parameter": 1, "children": [] }
+            ]
+          }
+        ]
+      }
+    ]
+  ]
+}

@@ -1,0 +1,245 @@
+[
+  {
+    "levelId": 1,
+    "title": "Sky-Isle Cleanup",
+    "stemDomain": "Logic",
+    "description": "Navigate the grid and clean all trash tiles to restore the island.",
+    "requiredBlockTypes": ["ACTION_MOVE", "ACTION_TURN", "ACTION_CLEAN"],
+    "codeCapacityLimit": 10,
+    "gridSize": { "columns": 5, "rows": 5 },
+    "environment": { "timeOfDay": "DAY", "weather": "CLEAR" },
+    "successMetric": "TRASH_CLEANED_PERCENTAGE",
+    "successThreshold": 1.0,
+    "stuckRetryThreshold": 4,
+    "cosmeticReward": "leaf_antenna",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Watch where your bot is facing!", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "Grid coordinates: (column, row). Your bot starts at (1,1).", "iconKey": "grid" },
+      "tier3": { "type": "interactive", "toolType": "DRAG_MOVE_DEMO", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-08", "1B-AP-10"],
+    "ngssPractices": ["Science and Engineering Practice 5: Using Mathematics and Computational Thinking"]
+  },
+  {
+    "levelId": 2,
+    "title": "Solar Panel Path",
+    "stemDomain": "Sequencing & Loops",
+    "description": "Clean the dusty solar panels lined up in a row. Use a Repeat block so your program stays short.",
+    "requiredBlockTypes": ["ACTION_MOVE", "ACTION_CLEAN", "LOOP_REPEAT"],
+    "codeCapacityLimit": 6,
+    "gridSize": { "columns": 7, "rows": 3 },
+    "environment": { "timeOfDay": "DAY", "weather": "CLEAR" },
+    "successMetric": "PANELS_CLEANED_PERCENTAGE",
+    "successThreshold": 1.0,
+    "stuckRetryThreshold": 4,
+    "cosmeticReward": "solar_visor",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Do you see a pattern? Move, clean, move, clean...", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "A Repeat block runs the blocks inside it again and again. Count the panels to pick the number.", "iconKey": "loop" },
+      "tier3": { "type": "interactive", "toolType": "LOOP_UNROLL_VISUALIZER", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-10", "1B-AP-11"],
+    "ngssPractices": [
+      "Science and Engineering Practice 5: Using Mathematics and Computational Thinking",
+      "Science and Engineering Practice 6: Constructing Explanations and Designing Solutions"
+    ]
+  },
+  {
+    "levelId": 3,
+    "title": "Water Wheel Village",
+    "stemDomain": "Nested Loops",
+    "description": "Water every garden bed around the village square. Repeat a pattern inside another pattern to cover the whole square.",
+    "requiredBlockTypes": ["ACTION_MOVE", "ACTION_TURN", "ACTION_WATER", "LOOP_REPEAT"],
+    "codeCapacityLimit": 8,
+    "gridSize": { "columns": 6, "rows": 6 },
+    "environment": { "timeOfDay": "DAY", "weather": "CLEAR" },
+    "successMetric": "PLANTS_WATERED_PERCENTAGE",
+    "successThreshold": 1.0,
+    "stuckRetryThreshold": 5,
+    "cosmeticReward": "water_wheel_wheels",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "The beds make a square. How many sides does a square have?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "Put one Repeat block inside another: the inside loop waters one side, the outside loop does all 4 sides.", "iconKey": "loop" },
+      "tier3": { "type": "interactive", "toolType": "NESTED_LOOP_TRACE", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-10", "1B-AP-11", "1B-AP-15"],
+    "ngssPractices": [
+      "Science and Engineering Practice 5: Using Mathematics and Computational Thinking",
+      "5-ESS3-1: Obtain and combine information about ways individual communities use science ideas to protect the Earth's resources and environment"
+    ]
+  },
+  {
+    "levelId": 4,
+    "title": "Wind Farm Ridge",
+    "stemDomain": "Energy Systems",
+    "description": "Rotate each wind turbine to face the wind and feed the town's power grid. Reach the target energy output.",
+    "requiredBlockTypes": ["ACTION_MOVE", "ACTION_TURN", "ACTION_ROTATE_TURBINE", "LOOP_REPEAT"],
+    "codeCapacityLimit": 10,
+    "gridSize": { "columns": 7, "rows": 5 },
+    "environment": { "timeOfDay": "DAY", "weather": "WINDY" },
+    "successMetric": "ENERGY_OUTPUT_KW",
+    "successThreshold": 50,
+    "stuckRetryThreshold": 5,
+    "cosmeticReward": "wind_turbine_hat",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Look at the wind arrows. Which way are the turbines pointing?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "A turbine makes the most energy when it faces straight into the wind. Each rotation turns it 90 degrees.", "iconKey": "wind" },
+      "tier3": { "type": "interactive", "toolType": "TURBINE_ANGLE_SLIDER", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-10", "1B-CS-02"],
+    "ngssPractices": [
+      "Science and Engineering Practice 2: Developing and Using Models",
+      "4-PS3-4: Apply scientific ideas to design, test, and refine a device that converts energy from one form to another"
+    ]
+  },
+  {
+    "levelId": 5,
+    "title": "Recycling Plant Sort",
+    "stemDomain": "Conditionals",
+    "description": "Items roll down the conveyor. Use If / Else blocks so your bot cleans recyclables and moves past everything else.",
+    "requiredBlockTypes": ["CONDITION_IF", "CONDITION_ELSE", "ACTION_CLEAN", "ACTION_MOVE", "LOOP_REPEAT"],
+    "codeCapacityLimit": 10,
+    "gridSize": { "columns": 8, "rows": 3 },
+    "environment": { "timeOfDay": "DAY", "weather": "CLEAR" },
+    "successMetric": "ITEMS_SORTED_ACCURACY",
+    "successThreshold": 0.9,
+    "stuckRetryThreshold": 5,
+    "cosmeticReward": "recycled_armor",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Not every item is the same. What is different about the recyclables?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "If something is true, the bot does the first action. Else it does the second one.", "iconKey": "branch" },
+      "tier3": { "type": "interactive", "toolType": "DECISION_TREE_BUILDER", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-10", "1B-AP-12"],
+    "ngssPractices": [
+      "Science and Engineering Practice 4: Analyzing and Interpreting Data",
+      "5-ESS3-1: Obtain and combine information about ways individual communities use science ideas to protect the Earth's resources and environment"
+    ]
+  },
+  {
+    "levelId": 6,
+    "title": "Hydro Dam Hydraulics",
+    "stemDomain": "Mathematical Modeling",
+    "description": "Open the dam gates in the right order to keep the reservoir level safe while spinning the hydro generator. Balance water flow in and out.",
+    "requiredBlockTypes": ["LOOP_REPEAT", "CONDITION_IF", "ACTION_ROTATE_TURBINE", "ACTION_WATER", "INPUT_BATTERY_CHARGE"],
+    "codeCapacityLimit": 12,
+    "gridSize": { "columns": 6, "rows": 6 },
+    "environment": { "timeOfDay": "DAY", "weather": "RAIN" },
+    "successMetric": "RESERVOIR_LEVEL_IN_RANGE",
+    "successThreshold": 0.95,
+    "stuckRetryThreshold": 6,
+    "cosmeticReward": "hydro_jetpack",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Watch the water gauge. Is it rising faster or slower than it drains?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "Water in minus water out = change in level. Open a gate when the level gets too high.", "iconKey": "water" },
+      "tier3": { "type": "interactive", "toolType": "FLOW_RATE_SIMULATOR", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-09", "1B-DA-07", "1B-AP-10"],
+    "ngssPractices": [
+      "Science and Engineering Practice 2: Developing and Using Models",
+      "Science and Engineering Practice 5: Using Mathematics and Computational Thinking",
+      "4-ESS3-1: Obtain and combine information to describe that energy and fuels are derived from natural resources"
+    ]
+  },
+  {
+    "levelId": 7,
+    "title": "Bridge Builder Canyon",
+    "stemDomain": "Structural Engineering",
+    "description": "Place bridge supports so the eco-truck can cross the canyon. The bridge must hold the load without bending too far.",
+    "requiredBlockTypes": ["ACTION_MOVE", "ACTION_TURN", "LOOP_REPEAT", "SUBROUTINE_CALL"],
+    "codeCapacityLimit": 12,
+    "gridSize": { "columns": 9, "rows": 5 },
+    "environment": { "timeOfDay": "DAY", "weather": "CLEAR" },
+    "successMetric": "BRIDGE_LOAD_SUPPORTED",
+    "successThreshold": 1.0,
+    "stuckRetryThreshold": 6,
+    "cosmeticReward": "bridge_builder_boots",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Where does the bridge sag the most when the truck drives on it?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "Triangles are strong shapes. Build one support pattern as a subroutine and call it for every gap.", "iconKey": "triangle" },
+      "tier3": { "type": "interactive", "toolType": "LOAD_STRESS_PREVIEW", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-11", "1B-AP-13", "1B-AP-15"],
+    "ngssPractices": [
+      "Science and Engineering Practice 6: Constructing Explanations and Designing Solutions",
+      "3-5-ETS1-2: Generate and compare multiple possible solutions to a problem based on how well each is likely to meet the criteria and constraints",
+      "3-5-ETS1-3: Plan and carry out fair tests in which variables are controlled and failure points are considered"
+    ]
+  },
+  {
+    "levelId": 8,
+    "title": "Compost Garden Sensors",
+    "stemDomain": "Sensors & Events",
+    "description": "Program a garden helper that runs forever: read the moisture sensor and water only the dry plants to save water.",
+    "requiredBlockTypes": ["TRIGGER_ALWAYS_LOOP", "INPUT_MOISTURE_SENSOR", "CONDITION_IF", "ACTION_WATER", "ACTION_MOVE"],
+    "codeCapacityLimit": 12,
+    "gridSize": { "columns": 6, "rows": 6 },
+    "environment": { "timeOfDay": "DAY", "weather": "SUNNY_HOT" },
+    "successMetric": "PLANTS_HEALTHY_AND_WATER_SAVED",
+    "successThreshold": 0.9,
+    "stuckRetryThreshold": 6,
+    "cosmeticReward": "compost_cape",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Some plants look droopy, others look fine. Does every plant need water?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "A sensor gives your bot information. If moisture is below the line, then water. 'Always' keeps checking.", "iconKey": "sensor" },
+      "tier3": { "type": "interactive", "toolType": "SENSOR_READOUT_OVERLAY", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-10", "1B-CS-02", "1B-DA-06"],
+    "ngssPractices": [
+      "Science and Engineering Practice 3: Planning and Carrying Out Investigations",
+      "Science and Engineering Practice 4: Analyzing and Interpreting Data"
+    ]
+  },
+  {
+    "levelId": 9,
+    "title": "Night Grid Balancer",
+    "stemDomain": "Systems Thinking",
+    "description": "When night falls the solar panels stop. Check the battery charge and switch the town between solar, wind and stored energy so the lights never go out.",
+    "requiredBlockTypes": ["TRIGGER_ALWAYS_LOOP", "INPUT_BATTERY_CHARGE", "CONDITION_IF", "CONDITION_ELSE", "SUBROUTINE_CALL", "ACTION_ROTATE_TURBINE"],
+    "codeCapacityLimit": 14,
+    "gridSize": { "columns": 8, "rows": 6 },
+    "environment": { "timeOfDay": "DAY_NIGHT_CYCLE", "weather": "VARIABLE_WIND" },
+    "successMetric": "UPTIME_PERCENTAGE",
+    "successThreshold": 0.95,
+    "stuckRetryThreshold": 7,
+    "cosmeticReward": "aurora_paint",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Watch the battery meter when the sun goes down. What happens?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "Store extra energy in the day and use it at night. Make one subroutine for day and one for night.", "iconKey": "battery" },
+      "tier3": { "type": "interactive", "toolType": "ENERGY_FLOW_DIAGRAM", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-09", "1B-AP-11", "1B-CS-02", "1B-DA-07"],
+    "ngssPractices": [
+      "Science and Engineering Practice 2: Developing and Using Models",
+      "4-ESS3-1: Obtain and combine information to describe that energy and fuels are derived from natural resources and their uses affect the environment"
+    ]
+  },
+  {
+    "levelId": 10,
+    "title": "Eco-City Master Mission",
+    "stemDomain": "Integrated Engineering",
+    "description": "Bring the whole Eco-City online: clean the streets, water the parks and power the town using everything you have learned, with as few blocks as possible.",
+    "requiredBlockTypes": [
+      "TRIGGER_ALWAYS_LOOP", "INPUT_MOISTURE_SENSOR", "INPUT_BATTERY_CHARGE", "CONDITION_IF", "CONDITION_ELSE",
+      "SUBROUTINE_CALL", "LOOP_REPEAT", "ACTION_MOVE", "ACTION_TURN", "ACTION_CLEAN", "ACTION_WATER", "ACTION_ROTATE_TURBINE"
+    ],
+    "codeCapacityLimit": 16,
+    "gridSize": { "columns": 10, "rows": 8 },
+    "environment": { "timeOfDay": "DAY_NIGHT_CYCLE", "weather": "VARIABLE" },
+    "successMetric": "CITY_SUSTAINABILITY_SCORE",
+    "successThreshold": 0.85,
+    "stuckRetryThreshold": 8,
+    "cosmeticReward": "golden_gear_crown",
+    "hintTiers": {
+      "tier1": { "type": "observational", "text": "Break the big mission into smaller jobs. Which job is the most urgent?", "iconKey": "eye" },
+      "tier2": { "type": "conceptual", "text": "Reuse your best ideas: make a subroutine for each job, then call them from one Always loop.", "iconKey": "puzzle" },
+      "tier3": { "type": "interactive", "toolType": "DECOMPOSITION_PLANNER", "iconKey": "hand" }
+    },
+    "cstaStandards": ["1B-AP-08", "1B-AP-10", "1B-AP-11", "1B-AP-13", "1B-AP-15"],
+    "ngssPractices": [
+      "Science and Engineering Practice 1: Asking Questions and Defining Problems",
+      "Science and Engineering Practice 6: Constructing Explanations and Designing Solutions",
+      "3-5-ETS1-1: Define a simple design problem reflecting a need or a want that includes specified criteria for success and constraints"
+    ]
+  }
+]
