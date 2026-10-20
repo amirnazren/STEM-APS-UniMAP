@@ -45,7 +45,12 @@ function emitWithAck(socket, event, payload, timeoutMs = 5000) {
  * Live classroom connection.
  *
  * @param {string} roomPin 4-digit classroom PIN.
- * @param {string} [teacherName='Teacher'] Display name sent with `teacher:join`.
+ * @param {string} [teacherName='Teacher'] Display name sent with `teacher:join` (or `observer:join`).
+ * @param {{ role?: 'teacher'|'observer' }} [options]
+ *   `role: 'observer'` joins read-only via `observer:join` (used by the projector HUD). Observers
+ *   receive the same live events but never claim the classroom, so closing an observer tab does
+ *   not mark the room inactive or fire `teacher:disconnected`. Control actions are rejected by
+ *   the server for observers.
  * @returns {{
  *   students: object[],
  *   alerts: object[],
@@ -68,7 +73,8 @@ function emitWithAck(socket, event, payload, timeoutMs = 5000) {
  *   reconnect: () => void
  * }}
  */
-export default function useClassroomSocket(roomPin, teacherName = 'Teacher') {
+export default function useClassroomSocket(roomPin, teacherName = 'Teacher', options = {}) {
+  const role = options && options.role === 'observer' ? 'observer' : 'teacher';
   const [students, setStudents] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [activityFeed, setActivityFeed] = useState([]);
@@ -126,9 +132,14 @@ export default function useClassroomSocket(roomPin, teacherName = 'Teacher') {
       setIsConnected(true);
       setConnectionError(null);
       // (Re-)join on every connect so a reconnect restores room membership.
-      socket.emit('teacher:join', { roomPin: String(roomPin), teacherName: teacherName || 'Teacher' }, (res) => {
+      const onJoinAck = (res) => {
         if (res && res.ok === false) setConnectionError(res.error || 'Could not join the classroom');
-      });
+      };
+      if (role === 'observer') {
+        socket.emit('observer:join', { roomPin: String(roomPin), observerName: teacherName || 'Projector HUD' }, onJoinAck);
+      } else {
+        socket.emit('teacher:join', { roomPin: String(roomPin), teacherName: teacherName || 'Teacher' }, onJoinAck);
+      }
     };
     const handleDisconnect = (reason) => {
       setIsConnected(false);
@@ -225,6 +236,7 @@ export default function useClassroomSocket(roomPin, teacherName = 'Teacher') {
       disconnect: handleDisconnect,
       connect_error: handleConnectError,
       'teacher:joined': handleJoined,
+      'observer:joined': handleJoined,
       'roster:updated': handleRoster,
       COMMUNITY_PROGRESS: handleCommunity,
       TOKEN_EARNED: handleToken,
@@ -246,7 +258,7 @@ export default function useClassroomSocket(roomPin, teacherName = 'Teacher') {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [roomPin, teacherName, nameFor, patchStudent, pushActivity]);
+  }, [roomPin, teacherName, role, nameFor, patchStudent, pushActivity]);
 
   // ---------------- emit helpers ----------------
   const pin = String(roomPin);

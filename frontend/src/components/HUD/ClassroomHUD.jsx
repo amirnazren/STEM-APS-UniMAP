@@ -9,7 +9,6 @@ import { useParams } from 'react-router-dom';
 import useClassroomSocket from '../../hooks/useClassroomSocket';
 import useWindowWidth from '../../hooks/useWindowWidth';
 import { COLORS, MAX_LEVEL, levelColor, studentShape } from '../../utils/format';
-import { getStoredTeacherName } from '../Dashboard/TeacherLogin';
 import CommunityProgressBar from './CommunityProgressBar';
 import ActivityTicker from './ActivityTicker';
 
@@ -75,11 +74,11 @@ StudentPod.propTypes = { student: studentShape.isRequired };
  */
 function ClassroomHUD() {
   const { roomPin } = useParams();
-  const [teacherName] = useState(() => getStoredTeacherName() || 'Teacher');
   const { isDesktop, isMobile } = useWindowWidth();
   const cursorHidden = useIdleCursor(CURSOR_HIDE_MS);
   const { students, activityFeed, communityTokens, communityGoal, isPaused, isConnected } =
-    useClassroomSocket(roomPin, teacherName);
+    // Read-only observer join: the projector tab never claims the classroom (see observer:join).
+    useClassroomSocket(roomPin, 'Projector HUD', { role: 'observer' });
 
   useEffect(() => {
     document.title = `Eco-Bot Builders | Class HUD ${roomPin}`;

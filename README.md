@@ -126,13 +126,19 @@ Open `http://localhost:3000`, enter your name, and create a classroom. Share the
 
 1. Open **Unity Hub** → **New project** → template **3D (URP)** with **Unity 2022.3 LTS**.
 2. Copy the contents of `unity/Assets/` into your project's `Assets/` folder (keep the `Scripts/` sub-folders).
-3. Install a Socket.io client package for Unity (for example *SocketIOUnity* or *socket.io-client-csharp* via the Package Manager / NuGetForUnity) and **Newtonsoft Json** (`com.unity.nuget.newtonsoft-json`).
-4. Set the backend address: open `NetworkManager.cs` (the Socket.io bridge, `Assets/Scripts/Network/`) and set
-   ```csharp
-   private const string BACKEND_URL = "http://localhost:3001"; // use your server's LAN IP or HTTPS URL for classroom devices
-   ```
-   > Note: `NetworkManager.cs` is not yet included in `unity/Assets/Scripts/`. Create it there (or add the constant to whichever component owns the Socket.io connection). Event names and payloads must match `schemas/websocket-payloads.json`.
-5. Create a scene with the core components (`GridEnvironmentManager`, `BlockParserEngine`, `LevelManager`, `HintSystem`, `DayNightController`, `AdaptiveAudioEngine`, `PhysicsSimulator`) attached to GameObjects, assign references in the Inspector, and press **Play**.
+3. Install the dependencies of `NetworkManager.cs`:
+   - **SocketIOUnity**: Package Manager → *Add package from git URL…* → `https://github.com/itisnajim/SocketIOUnity.git` (it wraps *SocketIOClient* / socket.io-client-csharp).
+   - **Newtonsoft Json**: `com.unity.nuget.newtonsoft-json`.
+   > ⚠️ `NetworkManager.cs` was written against the SocketIOClient 3.x API (`EmitAsync` with ack callbacks; handlers are marshalled to the main thread through its own queue). Its use of the SocketIOUnity API is **unverified against the real package**. It has only been compile-checked against a stub of `SocketIOUnity` plus the real `SocketIOClient` 3.0.8 NuGet, not inside the Unity Editor. Expect small signature fixes depending on the package version you install.
+4. Set the backend address. `NetworkManager` (`Assets/Scripts/Network/NetworkManager.cs`) exposes a `backendUrl` Inspector field (default `http://localhost:3001`). It is overridden, in priority order, by the `-BACKEND_URL=<url>` command-line argument, the `BACKEND_URL` environment variable, and then the value saved in PlayerPrefs. Classroom devices need your server's LAN IP or HTTPS URL.
+5. Create a scene with the core components (`NetworkManager`, `GridEnvironmentManager`, `BlockParserEngine`, `LevelManager`, `HintSystem`, `DayNightController`, `AdaptiveAudioEngine`, `PhysicsSimulator`) attached to GameObjects. Assign the references in the Inspector, then press **Play**. Students join with `NetworkManager.Instance.JoinClassroom(pin, name)`. `ResumeLastSession()` re-joins the classroom saved in PlayerPrefs.
+
+#### Unity NetworkManager.cs
+
+- A singleton (`NetworkManager.Instance`, `DontDestroyOnLoad`) that bridges the game to the backend over Socket.io. Event names and payloads follow `schemas/websocket-payloads.json`.
+- Send methods: `SendTokenEarned`, `SendLevelCompleted(levelId, LevelTelemetryData)`, `SendEnergyContributed`, `SendStuckAlert`. Every emit uses an ack timeout. Events emitted while offline are queued, persisted in PlayerPrefs, and flushed in order after a successful re-join.
+- Application heartbeat: `client:heartbeat {sentAt}` is sent every `heartbeatIntervalSeconds` (default 10 s) and acked by the server with `{ ok, serverTime, sentAt }`. The ack drives `OnLatencyUpdated`. If several heartbeats or acks are missed in a row, the connection is treated as dead and recycled.
+- Main-thread C# events: `OnJoined`, `OnJoinError`, `OnClassPaused`/`OnClassResumed` (`HintSystem` hides the current hint while paused and restores it on resume, and `LevelManager` holds level progression), `OnAudioMuted`/`OnAudioUnmuted`, `OnCosmeticUnlocked`, `OnCommunityProgress`, `OnTeacherDisconnected`, and others.
 
 ## Environment Variables
 
@@ -161,14 +167,14 @@ All endpoints are prefixed by the backend URL (default `http://localhost:3001`) 
 | `GET` | `/api/telemetry/student/:studentId` | Telemetry records for one student; `?includeSnapshots=true` adds block programs | Student ID |
 | `GET` | `/api/telemetry/class/:roomPin` | Class-wide competency averages (per student / per level) | Room PIN |
 | `POST` | `/api/telemetry/record` | Save a telemetry record (REST fallback to `student:level_completed`); body `{ studentId, levelId, retriesCount?, timeSpentSeconds?, subroutinesUsed?, stemCompetencyScores?, blockProgramSnapshot? }` | Student ID |
-| `GET` | `/api/reports/certificate/:studentId` | Downloadable PDF achievement certificate | Student ID |
+| `GET` | `/api/reports/certificate/:studentId` | Downloadable PDF achievement certificate. Returns **409** `{ error, code: "LEVEL_10_INCOMPLETE", requiredLevel: 10, levelsCompleted, currentLevel }` until the student has a Level 10 telemetry record (the dashboard shows the message and does not fall back to its client-side PDF) | Student ID |
 | `GET` | `/api/reports/export-csv/:roomPin` | CSV export for LMS gradebooks, aligned to CSTA standards | Room PIN |
 
 ## Socket.io Events Reference
 
 Full payload schemas, examples and acknowledgement shapes: [`schemas/websocket-payloads.json`](schemas/websocket-payloads.json). Every client → server event accepts an optional ack callback that receives `{ ok: boolean, error?: string, ... }`.
 
-**Rooms:** `room:<PIN>` = everyone in the class · `teacher:<PIN>` = teacher dashboards · `student:<studentId>` = one student.
+**Rooms:** `room:<PIN>` = everyone in the class · `teacher:<PIN>` = teacher dashboards and read-only observers (projector HUD) · `student:<studentId>` = one student.
 
 #### Client → Server (Student, Unity)
 
@@ -191,6 +197,18 @@ Full payload schemas, examples and acknowledgement shapes: [`schemas/websocket-p
 | `teacher:unmute_audio` | `{ roomPin }` | → `audio:unmute` |
 | `teacher:flag_student` | `{ roomPin, studentId }` | → `student:flagged` |
 
+#### Client → Server (Observer, Projector HUD)
+
+| Event | Payload | Server effect |
+|-------|---------|---------------|
+| `observer:join` | `{ roomPin, observerName? }` | Joins an **existing** classroom as a read-only observer (`room:<PIN>` + `teacher:<PIN>`) → `observer:joined` / `observer:join_error`. Does not claim the room, and does not trigger `teacher:disconnected` when it leaves. Teacher control events and student game events from an observer socket are rejected. |
+
+#### Client → Server (Any client)
+
+| Event | Payload | Server effect |
+|-------|---------|---------------|
+| `client:heartbeat` | `{ sentAt? }` (client clock, ms) | No broadcast. The ack returns `{ ok: true, serverTime, sentAt }` (`sentAt` is `null` if it was not sent) for latency measurement and liveness. Used by Unity `NetworkManager`. |
+
 #### Server → Client
 
 | Event | Audience | Payload |
@@ -207,6 +225,7 @@ Full payload schemas, examples and acknowledgement shapes: [`schemas/websocket-p
 | `student:flagged` | teacher | `{ studentId, studentName, flaggedAt }` |
 | `student:joined` / `student:join_error` | sender | join result |
 | `teacher:joined` | sender | full classroom state |
+| `observer:joined` / `observer:join_error` | sender | classroom state (same shape as `teacher:joined`) / `{ error }` |
 | `teacher:disconnected` | room | `{ roomPin, at }` |
 
 ## Level Curriculum Map
@@ -233,13 +252,22 @@ Each first-time level completion unlocks a robot cosmetic (`leaf_antenna` … `g
 | Script | Location | Responsibility |
 |--------|----------|----------------|
 | `BlockParserEngine.cs` | `Assets/Scripts/Core/` | Visual Logic Engine: parses the block tree (`LogicBlock`), validates code capacity, executes actions step by step, serializes programs to the block-program schema |
-| `GridEnvironmentManager.cs` | `Assets/Scripts/Core/` | Builds the tile grid from `LevelData`, tracks the `EcoBot` position/facing, applies move/turn/clean/water actions and reports win-condition state |
+| `GridEnvironmentManager.cs` | `Assets/Scripts/Core/` | Builds the tile grid (`ConfigureGrid`/`SetTileType`, or `LevelData`), tracks soil `MoistureLevel` for watering levels, tracks the `EcoBot` position/facing, applies move/turn/clean/water actions and reports win-condition state |
 | `DayNightController.cs` | `Assets/Scripts/Core/` | Day/night cycle: lighting, skybox transitions, solar/wind output, battery charge and phase-change events |
-| `LevelManager.cs` | `Assets/Scripts/Levels/` | Level definitions, loading and progression, telemetry collection (`TelemetryPayload`, competency scores) and win evaluation |
-| `HintSystem.cs` | `Assets/Scripts/UI/` | 3-tier adaptive hints (observational → conceptual → interactive) driven by retries; triggers the stuck alert |
+| `LevelManager.cs` | `Assets/Scripts/Levels/` | Level definitions, loading and progression. The 10 levels mirror `schemas/level-configs.json`. On a failed run it calls `HintSystem.ShowHint(level, retryCount)` and sends `student:stuck_alert` once the per-level retry threshold is reached. On completion it builds `LevelTelemetryData` (competency scores + `BlockProgramSerializer` snapshot) for `NetworkManager.SendLevelCompleted`, and evaluates the win condition from grid, physics and energy state |
+| `HintSystem.cs` | `Assets/Scripts/UI/` | Adaptive tiered hints (observational → conceptual → interactive) driven by retries. Hides the current hint on `NetworkManager.OnClassPaused` and restores it on `OnClassResumed` |
 | `AdaptiveAudioEngine.cs` | `Assets/Scripts/Audio/` | Adaptive music and SFX with day/night crossfades; honours teacher mute/unmute |
 | `PhysicsSimulator.cs` | `Assets/Scripts/Physics/` | Simplified hydraulics network (`HydraulicNode`) and bridge load/stress model (`BridgeSegment`) for levels 6 and 7 |
-| `NetworkManager.cs` *(not yet included)* | `Assets/Scripts/Network/` | Socket.io bridge to the backend (`BACKEND_URL`); sends `student:*` events and handles broadcasts |
+| `NetworkManager.cs` | `Assets/Scripts/Network/` | Socket.io bridge to the backend (SocketIOUnity; API unverified against the real package). Handles join/resume, `student:*` emits with ack timeouts, an offline queue, the `client:heartbeat` latency check, and main-thread events for broadcasts |
+
+## Testing
+
+```bash
+cd backend && npm test && npm run check    # node:test smoke tests (Mongoose mocked, no MongoDB needed) + syntax check
+cd frontend && CI=true npm run build       # production build, warnings treated as errors
+```
+
+The Unity scripts have only been checked with an out-of-repo .NET stub compile (hand-written UnityEngine stubs). They have not been compiled in the Unity Editor.
 
 ## Deployment Notes
 

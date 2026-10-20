@@ -1,3 +1,18 @@
 node_modules/
 build/
 .env
+*.log
+.logs/
+.abacus.donotdelete
+# backend/ is its own git repository
+/backend/
+# Unity generated folders
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Ll]ogs/
+unity/[Uu]ser[Ss]ettings/
+unity/[Bb]uild/
+# local stub-compile / scratch output
+.tmp/
+unity_stub_check/

@@ -10,11 +10,11 @@
     "path": "/socket.io",
     "rooms": {
       "room:<PIN>": "All students and the teacher of a classroom.",
-      "teacher:<PIN>": "Teacher dashboard sockets only.",
+      "teacher:<PIN>": "Teacher dashboard sockets and read-only observer sockets (projector HUD).",
       "student:<studentId>": "A single student's socket(s)."
     },
     "acknowledgements": "Every client->server event accepts an optional trailing ack callback which receives { ok: boolean, error?: string, ... }.",
-    "authorisation": "Teacher events are accepted only from the socket that sent teacher:join for that roomPin. Student game events are accepted only from the socket that joined as that studentId in that roomPin."
+    "authorisation": "Teacher events are accepted only from the socket that sent teacher:join for that roomPin. Student game events are accepted only from the socket that joined as that studentId in that roomPin. Observer sockets (observer:join, used by the projector ClassroomHUD) are read-only: they join room:<PIN> and teacher:<PIN> to receive broadcasts, but teacher control events (pause/resume/mute/flag) and student game events they send are rejected (requireTeacher/requireStudent) unless the socket re-joins with teacher:join or student:join. client:heartbeat is accepted from any socket."
   },
   "definitions": {
     "roomPin": {
@@ -612,6 +612,73 @@
           "x-ack": {
             "success": {
               "ok": true
+            }
+          }
+        }
+      },
+      "observer": {
+        "observer:join": {
+          "title": "observer:join",
+          "description": "Read-only join used by the projector ClassroomHUD. The room must already exist (created by teacher:join); the classroom record is never created or modified. The socket joins room:<PIN> and teacher:<PIN> so it receives every broadcast the teacher dashboard sees. Server replies with 'observer:joined' (or 'observer:join_error').",
+          "x-direction": "client->server",
+          "x-audience": "server",
+          "type": "object",
+          "properties": {
+            "roomPin": {
+              "$ref": "#/definitions/roomPin"
+            },
+            "observerName": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Optional display name for server logs. Defaults to 'Projector HUD'."
+            }
+          },
+          "required": [
+            "roomPin"
+          ],
+          "additionalProperties": false,
+          "examples": [
+            {
+              "roomPin": "0420",
+              "observerName": "Projector HUD"
+            }
+          ],
+          "x-ack": {
+            "success": {
+              "ok": true,
+              "classroom": "same object as observer:joined"
+            },
+            "error": {
+              "ok": false,
+              "error": "Room PIN must be exactly 4 digits | Room not found. Open the teacher dashboard for this PIN first."
+            }
+          }
+        }
+      },
+      "any": {
+        "client:heartbeat": {
+          "title": "client:heartbeat",
+          "description": "Application-level ping (sent by the Unity NetworkManager) used to measure round-trip latency and detect half-open connections. Accepted from any socket, joined or not. Has no side effects and no broadcast.",
+          "x-direction": "client->server",
+          "x-audience": "server",
+          "type": "object",
+          "properties": {
+            "sentAt": {
+              "type": "number",
+              "description": "Optional client timestamp (e.g. milliseconds) echoed back in the ack."
+            }
+          },
+          "additionalProperties": true,
+          "examples": [
+            {
+              "sentAt": 1729400000000
+            }
+          ],
+          "x-ack": {
+            "success": {
+              "ok": true,
+              "serverTime": "ISO-8601 string",
+              "sentAt": "number | null (echo of the request value)"
             }
           }
         }
@@ -1249,6 +1316,106 @@
               "at": "2026-10-19T15:00:00.000Z"
             }
           ]
+        },
+        "observer:joined": {
+          "title": "observer:joined",
+          "description": "Full classroom state (same shape as teacher:joined) sent to an observer socket after a successful observer:join.",
+          "x-direction": "server->client",
+          "x-audience": "sender socket only",
+          "type": "object",
+          "properties": {
+            "roomPin": {
+              "$ref": "#/definitions/roomPin"
+            },
+            "teacherName": {
+              "$ref": "#/definitions/personName"
+            },
+            "isActive": {
+              "type": "boolean"
+            },
+            "isPaused": {
+              "type": "boolean"
+            },
+            "isMuted": {
+              "type": "boolean"
+            },
+            "communityProgress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "communityGoal": {
+              "type": "integer"
+            },
+            "students": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/rosterStudent"
+              }
+            }
+          },
+          "required": [
+            "roomPin"
+          ],
+          "additionalProperties": true,
+          "examples": [
+            {
+              "roomPin": "0420",
+              "teacherName": "Ms. Rivera",
+              "isActive": true,
+              "isPaused": false,
+              "isMuted": false,
+              "communityProgress": 0,
+              "communityGoal": 1000,
+              "students": []
+            }
+          ]
+        },
+        "observer:join_error": {
+          "title": "observer:join_error",
+          "description": "observer:join failed (invalid PIN or the room does not exist yet).",
+          "x-direction": "server->client",
+          "x-audience": "sender socket only",
+          "type": "object",
+          "properties": {
+            "error": {
+              "type": "string",
+              "enum": [
+                "Room PIN must be exactly 4 digits",
+                "Room not found. Open the teacher dashboard for this PIN first."
+              ]
+            }
+          },
+          "required": [
+            "error"
+          ],
+          "additionalProperties": false,
+          "examples": [
+            {
+              "error": "Room not found. Open the teacher dashboard for this PIN first."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "x-rest-notes": {
+    "certificateGate": {
+      "endpoint": "GET /api/reports/certificate/:studentId",
+      "description": "The Master Systems Engineer certificate PDF is only issued once the student has a LevelTelemetry record for Level 10 (Eco-City Master Mission), i.e. after a student:level_completed with levelId 10. Otherwise the backend responds 409.",
+      "responses": {
+        "200": "application/pdf",
+        "400": {
+          "error": "Invalid student id"
+        },
+        "404": {
+          "error": "Student not found"
+        },
+        "409": {
+          "error": "Certificate unavailable: <name> has not completed Level 10 (Eco-City Master Mission) yet.",
+          "code": "LEVEL_10_INCOMPLETE",
+          "requiredLevel": 10,
+          "levelsCompleted": "integer (distinct levels with telemetry)",
+          "currentLevel": "integer"
         }
       }
     }
