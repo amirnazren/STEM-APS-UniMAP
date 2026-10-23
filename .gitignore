@@ -15,7 +15,6 @@ build/
 Thumbs.db
 *.suo
 *.user
-.abacus.donotdelete
 
 # Unity generated folders and IDE project files
 unity/[Ll]ibrary/

@@ -4,6 +4,7 @@
 // Safe to keep: it does nothing once a render pipeline is assigned.
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -25,6 +26,13 @@ namespace EcoBotBuilders.EditorTools
         [MenuItem("Eco-Bot Builders/Setup URP Pipeline")]
         public static void EnsureUrpAssigned()
         {
+            // Import packages first. The offline scene uses ScreenSpaceOverlay sprites;
+            // it does not rely on this helper or any legacy gameplay assembly.
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                EditorApplication.delayCall += EnsureUrpAssigned;
+                return;
+            }
             if (GraphicsSettings.defaultRenderPipeline != null) return;
 
             if (!AssetDatabase.IsValidFolder(SettingsFolder))
@@ -37,6 +45,7 @@ namespace EcoBotBuilders.EditorTools
                 if (renderer == null)
                 {
                     renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
+                    ResourceReloader.TryReloadAllNullIn(renderer, UniversalRenderPipelineAsset.packagePath);
                     AssetDatabase.CreateAsset(renderer, RendererPath);
                 }
 

@@ -1,18 +1,14 @@
 {
-    "name": "EcoBotBuilders",
-    "rootNamespace": "EcoBotBuilders",
-    "references": [
-        "UnityEngine.UI",
-        "Unity.TextMeshPro",
-        "SocketIOUnityAssembly"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "EcoBotBuilders.Legacy",
+  "rootNamespace": "EcoBotBuilders",
+  "references": ["UnityEngine.UI", "Unity.TextMeshPro"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": ["ECOBOT_LEGACY_ENABLED"],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

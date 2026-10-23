@@ -1,0 +1,19 @@
+{
+  "name": "EcoBotBuilders.Level1.Editor",
+  "rootNamespace": "EcoBotBuilders.Level1",
+  "references": [
+    "EcoBotBuilders.Level1.Core",
+    "EcoBotBuilders.Level1.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

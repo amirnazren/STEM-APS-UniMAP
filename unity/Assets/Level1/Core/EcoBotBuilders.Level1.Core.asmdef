@@ -1,0 +1,14 @@
+{
+  "name": "EcoBotBuilders.Level1.Core",
+  "rootNamespace": "EcoBotBuilders.Level1",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}

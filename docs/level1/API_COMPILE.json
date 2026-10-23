@@ -1,0 +1,14 @@
+{
+  "result": "passed",
+  "errors": 0,
+  "warnings": 0,
+  "scope": "Puzzle.cs and Level1/Runtime/*.cs",
+  "compiler": "Mono mcs 6.8.0.105",
+  "references": {
+    "UnityEngine.Modules": "2021.3.33",
+    "UnityEngine.UI": "2018.3.5.1"
+  },
+  "unity_editor_verified": false,
+  "editor_helpers_compiled": false,
+  "caveat": "Older API references; not Unity 2022.3 Editor compilation or runtime verification."
+}

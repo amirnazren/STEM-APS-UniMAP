@@ -1,3 +1,9 @@
+### Current milestone: offline Level 1 (validation incomplete)
+
+The shipped scene is `unity/Assets/Scenes/MainGameScene.unity`. See [Level 1 instructions and validation limitations](unity/README_LEVEL1.md). Level 1 uses its own isolated offline assembly; SocketIOUnity is NOT required. The older ten-level platform descriptions below describe legacy architecture, not a verified complete game.
+
+**Status:** scene, artwork and implementation written; 30 pure C# tests passed. Final scene/dependency audit and Unity Editor UI/Android validation remain outstanding. This is not a runtime-verified release.
+
 # Eco-Bot Builders — Full-Stack STEM Game Platform
 
 ## Overview

@@ -1,0 +1,17 @@
+{
+  "name": "EcoBotBuilders.Level1.Runtime",
+  "rootNamespace": "EcoBotBuilders.Level1",
+  "references": [
+    "EcoBotBuilders.Level1.Core",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
