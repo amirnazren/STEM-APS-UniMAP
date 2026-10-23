@@ -52,12 +52,17 @@ eco-bot-builders/
 │       │   └── common/                ← Panel
 │       ├── hooks/                     ← useClassroomSocket, useWindowWidth
 │       └── utils/                     ← api.js, format.js
-└── unity/
-    └── Assets/Scripts/
+└── unity/                           ← Unity 2022.3 LTS project (open this folder in Unity Hub)
+    ├── ProjectSettings/               ← ProjectVersion.txt, Player/Graphics/Quality/Input/Tag settings
+    ├── Packages/manifest.json         ← URP, Input System, TextMeshPro, Newtonsoft Json, …
+    ├── Assets/Editor/URPBootstrap.cs  ← creates + assigns the URP asset on first open
+    ├── Assets/Scenes/ · Assets/Settings/
+    └── Assets/Scripts/                ← EcoBotBuilders.asmdef
         ├── Core/                      ← BlockParserEngine, GridEnvironmentManager, DayNightController
         ├── Levels/                    ← LevelManager
         ├── UI/                        ← HintSystem
         ├── Audio/                     ← AdaptiveAudioEngine
+        ├── Network/                   ← NetworkManager (Socket.io client)
         └── Physics/                   ← PhysicsSimulator (hydraulics + bridge)
 ```
 
@@ -124,11 +129,11 @@ Open `http://localhost:3000`, enter your name, and create a classroom. Share the
 
 ### Unity Client
 
-1. Open **Unity Hub** → **New project** → template **3D (URP)** with **Unity 2022.3 LTS**.
-2. Copy the contents of `unity/Assets/` into your project's `Assets/` folder (keep the `Scripts/` sub-folders).
-3. Install the dependencies of `NetworkManager.cs`:
-   - **SocketIOUnity**: Package Manager → *Add package from git URL…* → `https://github.com/itisnajim/SocketIOUnity.git` (it wraps *SocketIOClient* / socket.io-client-csharp).
-   - **Newtonsoft Json**: `com.unity.nuget.newtonsoft-json`.
+`unity/` is a complete Unity **2022.3 LTS** project (`ProjectSettings/ProjectVersion.txt` → `2022.3.21f1`, `Packages/manifest.json` with URP 14, Input System, TextMeshPro, Newtonsoft Json, Cinemachine and Timeline). All game scripts compile into the `EcoBotBuilders` assembly (`Assets/Scripts/EcoBotBuilders.asmdef`).
+
+1. **Open the project.** Unity Hub → **Add** → *Add project from repository* → GitHub → `amirnazren/STEM-APS-UniMAP`, branch `main`. Or clone the repo and use *Add project from disk*, selecting the **`unity/`** folder, not the repo root. Any 2022.3.x editor works. If Hub offers a different 2022.3 patch version, accept it.
+2. **First open:** Unity downloads the packages listed in `manifest.json`. `Assets/Editor/URPBootstrap.cs` then creates `Assets/Settings/EcoBot_URP.asset` and assigns it as the render pipeline. You can run it again from the menu: **Eco-Bot Builders → Setup URP Pipeline**.
+3. **Install SocketIOUnity**, which `NetworkManager.cs` needs and which is *not* in `manifest.json`. Until it is installed, the `EcoBotBuilders` assembly will not compile. If Unity asks to enter **Safe Mode**, choose **Ignore**. Then go to *Window → Package Manager → + → Add package from git URL…* and enter `https://github.com/itisnajim/SocketIOUnity.git`. This requires Git on your PATH. The asmdef already references its assembly (`SocketIOUnityAssembly`).
    > ⚠️ `NetworkManager.cs` was written against the SocketIOClient 3.x API (`EmitAsync` with ack callbacks; handlers are marshalled to the main thread through its own queue). Its use of the SocketIOUnity API is **unverified against the real package**. It has only been compile-checked against a stub of `SocketIOUnity` plus the real `SocketIOClient` 3.0.8 NuGet, not inside the Unity Editor. Expect small signature fixes depending on the package version you install.
 4. Set the backend address. `NetworkManager` (`Assets/Scripts/Network/NetworkManager.cs`) exposes a `backendUrl` Inspector field (default `http://localhost:3001`). It is overridden, in priority order, by the `-BACKEND_URL=<url>` command-line argument, the `BACKEND_URL` environment variable, and then the value saved in PlayerPrefs. Classroom devices need your server's LAN IP or HTTPS URL.
 5. Create a scene with the core components (`NetworkManager`, `GridEnvironmentManager`, `BlockParserEngine`, `LevelManager`, `HintSystem`, `DayNightController`, `AdaptiveAudioEngine`, `PhysicsSimulator`) attached to GameObjects. Assign the references in the Inspector, then press **Play**. Students join with `NetworkManager.Instance.JoinClassroom(pin, name)`. `ResumeLastSession()` re-joins the classroom saved in PlayerPrefs.

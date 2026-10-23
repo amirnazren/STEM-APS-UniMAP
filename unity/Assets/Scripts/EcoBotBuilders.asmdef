@@ -1,0 +1,18 @@
+{
+    "name": "EcoBotBuilders",
+    "rootNamespace": "EcoBotBuilders",
+    "references": [
+        "UnityEngine.UI",
+        "Unity.TextMeshPro",
+        "SocketIOUnityAssembly"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
