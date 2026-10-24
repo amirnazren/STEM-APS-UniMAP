@@ -1,0 +1,162 @@
+{
+  "scope": "Static source/configuration audit only; not Unity Editor compilation or gameplay verification",
+  "checks": [
+    {
+      "name": "asset meta coverage and unique GUIDs",
+      "pass": true,
+      "detail": "46 meta files; missing=[]; malformed/duplicate/orphan=[]"
+    },
+    {
+      "name": "scene YAML and unique fileIDs",
+      "pass": true,
+      "detail": "8 serialized objects"
+    },
+    {
+      "name": "scene local fileIDs and external script references",
+      "pass": true,
+      "detail": "All resolve to shipped objects / C# MonoScript asset"
+    },
+    {
+      "name": "scene boot controller active and correctly typed",
+      "pass": true,
+      "detail": "unity/Assets/Level1/Runtime/Level1Game.cs"
+    },
+    {
+      "name": "scene components and roots linked",
+      "pass": true,
+      "detail": "Component owners, root transforms and GameObjects agree"
+    },
+    {
+      "name": "camera and listener present",
+      "pass": true,
+      "detail": "One serialized camera and AudioListener"
+    },
+    {
+      "name": "first enabled build scene",
+      "pass": true,
+      "detail": "MainGameScene path and GUID match"
+    },
+    {
+      "name": "project settings YAML and asset GUID references",
+      "pass": true,
+      "detail": "Only shipped assets or Unity built-in resources"
+    },
+    {
+      "name": "all asmdef references resolved by project or declared packages",
+      "pass": true,
+      "detail": "['EcoBotBuilders.Legacy', 'EcoBotBuilders.Level1.Core', 'EcoBotBuilders.Level1.Editor', 'EcoBotBuilders.Level1.Runtime', 'EcoBotBuilders.Pipeline.Editor']"
+    },
+    {
+      "name": "legacy networking excluded without dangling SocketIO assembly",
+      "pass": true,
+      "detail": "Opt-in legacy define absent; no SocketIO package required by active assemblies"
+    },
+    {
+      "name": "EcoBotBuilders.Level1.Editor editor isolation",
+      "pass": true,
+      "detail": "Excluded from player builds"
+    },
+    {
+      "name": "EcoBotBuilders.Pipeline.Editor editor isolation",
+      "pass": true,
+      "detail": "Excluded from player builds"
+    },
+    {
+      "name": "runtime dependency boundary",
+      "pass": true,
+      "detail": "Unity-free model; runtime references Core/uGUI only"
+    },
+    {
+      "name": "active source has no legacy or editor dependency leak",
+      "pass": true,
+      "detail": "Inspected every active .cs ownership boundary"
+    },
+    {
+      "name": "active MonoBehaviour filename mapping",
+      "pass": true,
+      "detail": "Each attached runtime MonoBehaviour has its own matching script file"
+    },
+    {
+      "name": "input and EventSystem configuration",
+      "pass": true,
+      "detail": "Legacy Input Manager selected explicitly; uGUI mouse/touch module and required axes wired"
+    },
+    {
+      "name": "auto-wiring source entry points",
+      "pass": true,
+      "detail": "Awake creates UI/board/audio/input; source check, not an execution claim"
+    },
+    {
+      "name": "Unity version and URP package pin",
+      "pass": true,
+      "detail": "Unity 2022.3.21f1 / URP 14.0.10 / uGUI 1.0.0; package resolution still requires real Editor import"
+    },
+    {
+      "name": "URP helper API source review markers",
+      "pass": true,
+      "detail": "Public APIs checked against official Graphics 2022.3 source; explicit Core/Universal runtime assembly references; no Editor compilation claimed"
+    },
+    {
+      "name": "all Resources texture and font lookups",
+      "pass": true,
+      "detail": "Level1/Interface, Level1/InterfaceBold, Level1/grass, Level1/litter, Level1/robot, Level1/stone"
+    },
+    {
+      "name": "Level1/Interface UI symbol coverage",
+      "pass": true,
+      "detail": "Bundled font covers control/heading symbols"
+    },
+    {
+      "name": "Level1/InterfaceBold UI symbol coverage",
+      "pass": true,
+      "detail": "Bundled font covers control/heading symbols"
+    },
+    {
+      "name": "Level1/grass image/import settings",
+      "pass": true,
+      "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
+    },
+    {
+      "name": "Level1/litter image/import settings",
+      "pass": true,
+      "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
+    },
+    {
+      "name": "Level1/robot image/import settings",
+      "pass": true,
+      "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
+    },
+    {
+      "name": "Level1/stone image/import settings",
+      "pass": true,
+      "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
+    },
+    {
+      "name": "existing logic evidence retained without rerun",
+      "pass": true,
+      "detail": "Model and test harness byte-identical to tested c7de4eb; existing 30/30 results reused"
+    }
+  ],
+  "passed": 27,
+  "failed": 0,
+  "unity_editor_verified": false,
+  "android_verified": false,
+  "upm_resolution_verified": false,
+  "reviewed_api_sources": [
+    "https://github.com/Unity-Technologies/Graphics/blob/2022.3/staging/Packages/com.unity.render-pipelines.core/Runtime/Utilities/ResourceReloader.cs",
+    "https://github.com/Unity-Technologies/Graphics/blob/2022.3/staging/Packages/com.unity.render-pipelines.universal/Runtime/Data/UniversalRenderPipelineAsset.cs"
+  ],
+  "source_sha256": {
+    "unity/Assets/Editor/URPBootstrap.cs": "0bb090a9e1e98b9ec125ca6dc32dae2df23aa9d9f89429afbb2bab895ce8e432",
+    "unity/Assets/Level1/Core/Puzzle.cs": "9dd2c6b4e1520d87b69536a8d642ce9d29bb7ef6cf39fd2feb24d050af583211",
+    "unity/Assets/Level1/Editor/Level1SceneSetup.cs": "27bbfc1404c7b221d067515942e20618fd5c814ca0c9fd493673debb6cb3cdac",
+    "unity/Assets/Level1/Runtime/BlockDrop.cs": "16935e47aa9be34058f8a4140e31685e78c14484946167bf19c7ad71df203d1b",
+    "unity/Assets/Level1/Runtime/BlockPointer.cs": "804a56bc21319d0254a7b4fa0e8bd85727175efa8542b3a14e91bf16da652300",
+    "unity/Assets/Level1/Runtime/IslandAudio.cs": "8dcafa45ef5b82047953d318cca9a9319f0a54309dfe6837259418b04dc9a015",
+    "unity/Assets/Level1/Runtime/IslandBoard.cs": "54f78684b09484ad7807e745a231f0b1068be18be042e8b37123837d9b4aa55f",
+    "unity/Assets/Level1/Runtime/IslandUI.cs": "3dca6ab3f459bda9b3c2dc36ed984310c395c21e29712bf45d53318351e15cb5",
+    "unity/Assets/Level1/Runtime/Level1Game.cs": "9ad8129f8fd46211b6054c21b96272f55cb8fe76dbaba2c975009dc0f3ed905d",
+    "unity/Assets/Scenes/MainGameScene.unity": "e0219834332fa05b06e5b6aca6261f5210eb2c8d4024e05d8087fc5b400b07e3",
+    "unity/Packages/manifest.json": "23ce375ea882090ae9044976a371434396ae7031160f9eaaeeac383bcd6e01ba"
+  }
+}

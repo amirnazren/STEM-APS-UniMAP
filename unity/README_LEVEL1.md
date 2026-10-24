@@ -1,6 +1,6 @@
 ### Eco-Bot Builders — Level 1: Tideleaf Island
 
-**Handoff status: implementation written; final validation incomplete.** This run reached its execution limit before the final project-wide static audit. Treat this commit as a source milestone, not a verified ready-to-play release.
+**Handoff status: Level 1 source milestone complete; source-level audit passed.** The actual Unity scene, artwork, metadata, build settings and auto-wired offline implementation are shipped. This is a Unity source-project delivery, not an APK or a claim of runtime-verified gameplay.
 
 **Delivered scope:** an offline Level 1 scene, generated sprite artwork, block editor, deterministic puzzle simulation, hints, sound and victory UI. This is not the completed ten-level game. The old backend, teacher dashboard and legacy scripts remain in this repository but are not used by this scene.
 
@@ -9,7 +9,7 @@
 ### Open and play on your Windows computer
 
 1. Pull/download the current `main` branch of `https://github.com/amirnazren/STEM-APS-UniMAP`.
-2. In Unity Hub choose **Add project from disk**, select the repository's **unity** folder, and use **Unity 2022.3.21f1** (the pinned version). Another compatible 2022.3 patch may require Unity's normal project upgrade/import; that combination was not tested here.
+2. In Unity Hub choose **Add project from disk**, select the repository's **unity** folder (inside `EcoBotBuilders-Level1` if using the supplied ZIP), and use **Unity 2022.3.21f1** (the pinned version). Another compatible 2022.3 patch may require Unity's normal project upgrade/import; that combination was not tested here.
 3. Let the existing Unity packages import. First import requires Internet for Unity's own package dependencies; the game itself uses no Internet and ships all art, fonts and sounds locally. **Do not install SocketIOUnity and do not enable `ECOBOT_LEGACY_ENABLED`.** Safe Mode, if shown, should be used to inspect real compiler errors, not bypassed.
 4. Open **Assets/Scenes/MainGameScene.unity** and press **Play**. It is also the first enabled scene in Build Settings. The serialized scene has the offline controller, camera and AudioListener. On Play, that controller creates and wires its complete Canvas, island, robot, EventSystem, palette, program list, dialogs and audio — no manual Inspector assignment.
 5. Recovery only: **Eco-Bot Builders → Level 1 → Open Main Game Scene**. If the scene was accidentally changed, **Rebuild Scene (recovery)** recreates and wires it after a confirmation. This is a fallback, not the delivery mechanism.
@@ -48,7 +48,7 @@ Cost: **7 authored blocks**, **13 executed actions**, **6 clean tokens**. Spawn 
 | `Assets/Level1/Core/Puzzle.cs` | Unity-free level definition, program validation/editing and one deterministic session state machine. Exact file compiled into the tests and runtime. |
 | `EcoBotBuilders.Level1.Runtime` | One `Level1Game` controller; island presentation, uGUI pointer/drop controls and procedural audio. References only Core and `UnityEngine.UI`. |
 | `EcoBotBuilders.Level1.Editor` | Scene recovery menu; Editor-only; references Core and Runtime. |
-| `Assets/Editor/URPBootstrap.cs` | Existing editor-only helper. Waits for imports and fills URP renderer resources using the official 2022.3 API. The overlay sprite presentation itself does not depend on a 3D lighting pipeline. |
+| `Assets/Editor/URPBootstrap.cs` | Explicit Editor-only assembly with Core/Universal runtime references. Waits for imports and fills URP renderer resources using the public API reviewed in official 2022.3 source. The overlay sprite presentation itself does not depend on a 3D lighting pipeline. |
 | `Assets/Scripts/EcoBotBuilders.asmdef` | Preserved **legacy** code, compile-disabled by `ECOBOT_LEGACY_ENABLED`, not auto-referenced. No dangling SocketIO assembly reference. No legacy manager exists in MainGameScene. |
 
 The legacy parser/grid/manager were inspected, not silently wired up. They couple Unity coroutine execution, mutable grid state, ten-level orchestration and network types. Reusing them would not yield the same independently testable model. Level 1 deliberately uses a contained replacement assembly; it does **not** synchronize with those old managers. To reactivate legacy systems later, install and validate SocketIOUnity, add its correct assembly reference to Legacy and then enable the define. This is separate work, not a requirement for Level 1.
@@ -57,9 +57,9 @@ The previous handwritten `URPProjectSettings.asset` referenced an unresolvable s
 
 ### Evidence from this Linux authoring machine
 
-- **30/30 pure C# checks passed**, zero failed; compiled with Mono mcs 6.8.0.105, C# 7.2, warnings-as-errors. Includes movement/turns; single/double/empty Clean; every boundary; rock collision; Repeat count/body/nesting validation; budget; no overlapping runs; pause/resume; retry; win; reset; known solution; insertion/reorder/removal; reachable litter; and 1,000 seeded random programs checking bounds and token invariants. See `../docs/level1/LOGIC_TESTS.json`.
-- Secondary compilation covers **Puzzle.cs and all runtime presentation scripts**, against UnityEngine.Modules 2021.3.33 and UnityEngine.UI 2018.3.5.1 redistributed reference DLLs: **0 errors, 0 warnings**. These are older API references, not the target Unity 2022.3 toolchain; no DLLs are shipped. Editor helpers were reviewed against source, not compiled by this check. See `API_COMPILE.json`.
-- Final static scene/fileID/GUID, dependency-boundary and resource audit is **outstanding**. No STATIC_CHECKS.json result is claimed.
+- **30/30 pure C# checks passed**, zero failed (existing results reused: model and test harness verified byte-identical to tested commit `c7de4eb`, so the unchanged suite was not rerun); compiled with Mono mcs 6.8.0.105, C# 7.2, warnings-as-errors. Includes movement/turns; single/double/empty Clean; every boundary; rock collision; Repeat count/body/nesting validation; budget; no overlapping runs; pause/resume; retry; win; reset; known solution; insertion/reorder/removal; reachable litter; and 1,000 seeded random programs checking bounds and token invariants. See `../docs/level1/LOGIC_TESTS.json`.
+- Secondary compilation covers **Puzzle.cs and all runtime presentation scripts**, against UnityEngine.Modules 2021.3.33 and UnityEngine.UI 2018.3.5.1 redistributed reference DLLs: **0 errors, 0 warnings**. These are older API references, not the target Unity 2022.3 toolchain; no DLLs are shipped. Editor helpers were reviewed against source, not compiled by this check. See `../docs/level1/API_COMPILE.json`.
+- **27/27 static audit checks passed**: unique/matching metadata, scene fileIDs and MonoScript GUID, active controller/camera/listener, component ownership and roots, first build scene, settings YAML/built-in resource references, complete assembly ownership and declared dependency graph, inactive legacy define, Editor-only helpers, MonoBehaviour filenames, input axes/EventSystem, local Resources and valid artwork/fonts. See `../docs/level1/STATIC_CHECKS.json`. This is source/serialization validation, not proof Unity has imported the files.
 - `../docs/level1/art-preview.png` is an **offline asset composition, NOT a Unity screenshot**. It was visually inspected for readable robot/litter, tile joins, palette contrast and layout. The intended style matches the art direction; real Unity text layout, draw order, input and device scaling remain unverified.
 - No Unity Editor installed/licensed/executed for this milestone. No Android APK produced. No gameplay feel/performance scores invented from a still image.
 
@@ -76,6 +76,23 @@ Optional secondary API check (downloads reference DLLs only into a temporary dir
 ```bash
 python3 tools/level1-tests/api_compile.py
 ```
+
+### Final source audit fixes
+
+- `BlockDrop` now has its own matching `.cs`/`.meta` MonoScript rather than sharing another component's file.
+- URP bootstrap has an explicit Editor-only assembly and only the two relevant pipeline runtime assembly references. `ResourceReloader` is in `UnityEngine.Rendering`; the unnecessary Editor namespace import was removed. The helper was reviewed against the public Unity Graphics 2022.3 source, **not compiled by Unity**.
+- Input Handling is explicitly **Input Manager (Old)** (`activeInputHandler: 0`), matching `StandaloneInputModule` and the existing axes. This avoids requiring two input backends for the offline scene. The unused Input System package remains installed for legacy compatibility; no Level 1 script imports it.
+- Backend/frontend and old game script implementations were preserved. No new network dependency was introduced.
+
+Reproduce the static audit on this authoring machine (Python packages: PyYAML, Pillow, fonttools):
+
+```bash
+python3 tools/level1-tests/static_audit.py
+```
+
+The downloadable ZIP contains tracked `unity/Assets`, `unity/Packages`, `unity/ProjectSettings`, this README and the adjacent evidence docs. It excludes caches, secrets, dependency folders and build binaries. `SOURCE_MANIFEST.json` inside the ZIP records the exact source commit and each file hash; `START_HERE.txt` gives the opening steps. The packaging script is committed at `tools/level1-tests/package_unity.py`; the redundant binary ZIP is not committed.
+
+**Remaining verification boundary:** Unity Package Manager dependency resolution, Editor helper compilation/import, Play Mode rendering/input/audio and Android builds have not been exercised. No Unity executable is available on this authoring machine; no licensing/install workaround was attempted. A general registry lookup did not expose the pinned URP package, so neither that lookup nor API source review is claimed as a successful package install. The manifest retains the existing Unity 2022.3/URP 14 pins; actual Editor import must confirm resolution.
 
 ### Windows Unity verification checklist — not yet executed
 

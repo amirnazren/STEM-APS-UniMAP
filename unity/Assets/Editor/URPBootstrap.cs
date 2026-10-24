@@ -4,7 +4,6 @@
 // Safe to keep: it does nothing once a render pipeline is assigned.
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;

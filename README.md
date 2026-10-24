@@ -1,8 +1,8 @@
-### Current milestone: offline Level 1 (validation incomplete)
+### Current milestone: offline Level 1 — Unity source delivery
 
 The shipped scene is `unity/Assets/Scenes/MainGameScene.unity`. See [Level 1 instructions and validation limitations](unity/README_LEVEL1.md). Level 1 uses its own isolated offline assembly; SocketIOUnity is NOT required. The older ten-level platform descriptions below describe legacy architecture, not a verified complete game.
 
-**Status:** scene, artwork and implementation written; 30 pure C# tests passed. Final scene/dependency audit and Unity Editor UI/Android validation remain outstanding. This is not a runtime-verified release.
+**Status:** scene, artwork and implementation delivered; 30 existing pure C# checks retained, 27 static audit checks passed, and adjusted runtime sources passed reference-API compilation. Real Unity Editor UI/Android validation remains outstanding. This is a source milestone, not a runtime-verified release.
 
 # Eco-Bot Builders — Full-Stack STEM Game Platform
 
@@ -133,7 +133,9 @@ npm start              # starts on port 3000
 
 Open `http://localhost:3000`, enter your name, and create a classroom. Share the PIN or QR code with your students.
 
-### Unity Client
+### Legacy Unity Client (not required for offline Level 1)
+
+For Level 1, follow [README_LEVEL1.md](unity/README_LEVEL1.md) instead. The instructions below describe legacy network integration, which is compile-disabled by default.
 
 `unity/` is a complete Unity **2022.3 LTS** project (`ProjectSettings/ProjectVersion.txt` → `2022.3.21f1`, `Packages/manifest.json` with URP 14, Input System, TextMeshPro, Newtonsoft Json, Cinemachine and Timeline). All game scripts compile into the `EcoBotBuilders` assembly (`Assets/Scripts/EcoBotBuilders.asmdef`).
 
