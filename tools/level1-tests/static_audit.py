@@ -2,9 +2,11 @@
 from pathlib import Path
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
+import tempfile
 import yaml
 from PIL import Image
 from fontTools.ttLib import TTFont
@@ -65,7 +67,31 @@ check('scene components and roots linked', all(str(r['fileID']) in objects for r
 check('camera and listener present', objects['200']['GameObject']['m_TagString'] == 'MainCamera' and objects['202']['Camera']['orthographic'] == 1 and objects['203']['AudioListener']['m_Enabled'] == 1, 'One serialized camera and AudioListener')
 build = load_unity(UNITY / 'ProjectSettings/EditorBuildSettings.asset')[0]['EditorBuildSettings']['m_Scenes']
 scene_guid = next(g for g,p in meta_map.items() if p == scene)
-check('first enabled build scene', bool(build) and build[0]['enabled'] == 1 and build[0]['path'] == 'Assets/Scenes/MainGameScene.unity' and build[0]['guid'] == scene_guid, 'MainGameScene path and GUID match')
+select = ASSETS / 'Scenes/LevelSelectScene.unity'
+select_guid = next(g for g,p in meta_map.items() if p == select)
+check('build scene list order (Level Select first, game second)',
+      len(build) == 2
+      and build[0]['enabled'] == 1 and build[0]['path'] == 'Assets/Scenes/LevelSelectScene.unity' and build[0]['guid'] == select_guid
+      and build[1]['enabled'] == 1 and build[1]['path'] == 'Assets/Scenes/MainGameScene.unity' and build[1]['guid'] == scene_guid,
+      'Scene 0 = LevelSelectScene, Scene 1 = MainGameScene; GUIDs match their meta')
+
+# The first-booting scene (Level Select) must carry an enabled, correctly-typed controller + camera.
+sel_text = select.read_text(); sel_ids = re.findall(r'^--- !u!\d+ &(\d+)', sel_text, re.M)
+sel_objects = dict(zip(sel_ids, load_unity(select)))
+sel_errors = []
+for ref in re.findall(r'\{fileID: [^}]+\}', sel_text):
+    data = yaml.safe_load(ref)
+    if data.get('fileID', 0) == 0: continue
+    if 'guid' in data:
+        if data['guid'] not in meta_map or data['fileID'] != 11500000 or meta_map[data['guid']].suffix != '.cs': sel_errors.append(ref)
+    elif str(data['fileID']) not in sel_objects: sel_errors.append(ref)
+sel_controller = sel_objects['102']['MonoBehaviour']
+sel_script = meta_map[sel_controller['m_Script']['guid']]
+check('first scene (Level Select) boots cleanly with its own controller', not sel_errors
+      and sel_script.name == 'LevelSelectScreen.cs' and sel_controller['m_Enabled'] == 1
+      and sel_objects['100']['GameObject']['m_IsActive'] == 1
+      and sel_objects['200']['GameObject']['m_TagString'] == 'MainCamera' and sel_objects['203']['AudioListener']['m_Enabled'] == 1,
+      str(sel_script.relative_to(ROOT)) + '; refs=' + str(sel_errors or 'all resolve'))
 
 bad_refs = []
 for p in list(ASSETS.rglob('*.unity')) + list(ASSETS.rglob('*.asset')) + list((UNITY/'ProjectSettings').glob('*.asset')):
@@ -101,7 +127,7 @@ check('active MonoBehaviour filename mapping', not mismatches, str(mismatches or
 boot = script.read_text()
 input_axes = load_unity(UNITY/'ProjectSettings/InputManager.asset')[0]['InputManager']['m_Axes']
 check('input and EventSystem configuration', settings['activeInputHandler'] == 0 and {'Horizontal','Vertical','Submit','Cancel'} <= {a['m_Name'] for a in input_axes} and 'typeof(StandaloneInputModule)' in boot and 'typeof(EventSystem)' in boot and 'typeof(GraphicRaycaster)' in boot, 'Legacy Input Manager selected explicitly; uGUI mouse/touch module and required axes wired')
-check('auto-wiring source entry points', all(s in boot for s in ['void Awake()', 'EnsureCameraAndInput(); BuildUI(); RefreshProgram();','new IslandBoard(root,session.Level)', 'AddComponent<IslandAudio>()','CanvasScaler.ScaleMode.ScaleWithScreenSize','Screen.safeArea']), 'Awake creates UI/board/audio/input; source check, not an execution claim')
+check('auto-wiring source entry points', all(s in boot for s in ['void Awake()', 'EnsureCameraAndInput(); BuildUI(); RefreshProgram();','new IslandBoard(root,session.Level', 'AddComponent<IslandAudio>()','CanvasScaler.ScaleMode.ScaleWithScreenSize','Screen.safeArea']), 'Awake creates UI/board/audio/input; source check, not an execution claim')
 check('Unity version and URP package pin', '2022.3.21f1' in (UNITY/'ProjectSettings/ProjectVersion.txt').read_text() and manifest.get('com.unity.render-pipelines.universal') == '14.0.10' and manifest.get('com.unity.ugui') == '1.0.0', 'Unity 2022.3.21f1 / URP 14.0.10 / uGUI 1.0.0; package resolution still requires real Editor import')
 helper = (ASSETS/'Editor/URPBootstrap.cs').read_text()
 check('URP helper API source review markers', all(s in helper for s in ['#if UNITY_EDITOR','using UnityEngine.Rendering;','ResourceReloader.TryReloadAllNullIn','UniversalRenderPipelineAsset.Create(renderer)','GraphicsSettings.defaultRenderPipeline']) and 'using UnityEditor.Rendering;' not in helper,
@@ -115,7 +141,15 @@ for p in ASSETS.rglob('*'):
 source = '\n'.join(p.read_text() for p in active)
 requested = set(re.findall(r'Resources\.Load<[^>]+>\("([^"]+)"\)',source))
 requested |= {'Level1/'+key for key in re.findall(r'IslandUI\.Art\("([^"]+)"',source)}
-check('all Resources texture and font lookups', all(len(resources.get(key,[])) == 1 for key in requested) and len(requested) == 6, ', '.join(sorted(requested)))
+# IslandBoard draws its sprites from BoardTheme fields (variables, not literals), so also pull the
+# themed sprite stems declared in LevelPresentation.cs — this covers the Level 2 dusty/clean panels.
+presentation = (ASSETS/'Level1/Runtime/LevelPresentation.cs').read_text()
+for field in ('Tile','Target','Cleaned','Obstacle'):
+    requested |= {'Level1/'+m for m in re.findall(field+r'\s*=\s*"([^"]+)"', presentation)}
+expected = {'Level1/Interface','Level1/InterfaceBold','Level1/robot','Level1/grass','Level1/litter',
+            'Level1/stone','Level1/panel_dusty','Level1/panel_clean'}
+check('all Resources texture and font lookups', all(len(resources.get(key,[])) == 1 for key in requested) and requested == expected,
+      str(len(requested)) + ' assets: ' + ', '.join(sorted(requested)))
 for key in sorted(requested):
     p = resources[key][0]
     if p.suffix == '.png':
@@ -128,10 +162,21 @@ for key in sorted(requested):
         check(key+' UI symbol coverage', all(ord(c) in cmap for c in '↑↓×−✓≡▶➜'), 'Bundled font covers control/heading symbols')
 
 baseline = 'c7de4eb5be82a88ee16f2c9dcd83bd53ea3c1715'
-logic_paths = ['unity/Assets/Level1/Core/Puzzle.cs','tools/level1-tests/Tests.cs']
-unchanged = all(subprocess.check_output(['git','show',baseline+':'+p],cwd=ROOT) == (ROOT/p).read_bytes() for p in logic_paths)
-logic = json.loads((ROOT/'docs/level1/LOGIC_TESTS.json').read_text())
-check('existing logic evidence retained without rerun', unchanged and logic['passed'] == 30 and all(c['pass'] for c in logic['checks']), 'Model and test harness byte-identical to tested c7de4eb; existing 30/30 results reused')
+# The Level 1 test HARNESS is still byte-identical to the baseline; Puzzle.cs changed (budget-aware),
+# so instead of reusing old evidence we RE-RUN both suites fresh against the current shared model.
+harness_unchanged = subprocess.check_output(['git','show',baseline+':tools/level1-tests/Tests.cs'],cwd=ROOT) == (ROOT/'tools/level1-tests/Tests.cs').read_bytes()
+def run_suite(sources, testsrc):
+    with tempfile.TemporaryDirectory(prefix='ecobot-audit-') as td:
+        exe = os.path.join(td,'t.exe')
+        comp = subprocess.run(['mcs','-langversion:7.2','-warnaserror','-out:'+exe]+[str(ROOT/s) for s in sources]+[str(ROOT/testsrc)],capture_output=True,text=True)
+        if comp.returncode: return False, (comp.stdout+comp.stderr).strip()[:200]
+        rn = subprocess.run(['mono',exe,td],capture_output=True,text=True)
+        last = rn.stdout.strip().splitlines()[-1] if rn.stdout.strip() else rn.stderr.strip()[:200]
+        return rn.returncode == 0 and 'passed, 0 failed' in rn.stdout, last
+l1_ok, l1_msg = run_suite(['unity/Assets/Level1/Core/Puzzle.cs'],'tools/level1-tests/Tests.cs')
+l2_ok, l2_msg = run_suite(['unity/Assets/Level1/Core/Puzzle.cs','unity/Assets/Level1/Core/Levels.cs'],'tools/level2-tests/Tests.cs')
+check('logic suites re-run fresh against current shared model (L1 + L2)', harness_unchanged and l1_ok and l2_ok,
+      'L1 harness == ' + baseline[:7] + '; L1: ' + l1_msg + ' | L2: ' + l2_msg)
 report = {'scope':'Static source/configuration audit only; not Unity Editor compilation or gameplay verification',
           'checks':checks,'passed':sum(c['pass'] for c in checks),'failed':sum(not c['pass'] for c in checks),
           'unity_editor_verified':False,'android_verified':False,'upm_resolution_verified':False,

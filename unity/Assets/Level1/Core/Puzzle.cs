@@ -23,13 +23,15 @@ namespace EcoBotBuilders.Level1
         public readonly int Width, Height;
         public readonly Cell Spawn;
         public readonly Heading Facing;
+        public readonly int Budget;
         public readonly System.Collections.ObjectModel.ReadOnlyCollection<Cell> Trash, Obstacles;
         public LevelDefinition(int width, int height, Cell spawn, Heading facing,
-            IEnumerable<Cell> trash, IEnumerable<Cell> obstacles)
+            IEnumerable<Cell> trash, IEnumerable<Cell> obstacles, int budget = 10)
         {
             if (width < 1 || height < 1 || trash == null || obstacles == null)
                 throw new ArgumentException("A level needs positive dimensions and cell lists.");
-            Width = width; Height = height; Spawn = spawn; Facing = facing;
+            if (budget < 1) throw new ArgumentException("A level budget must be positive.");
+            Width = width; Height = height; Spawn = spawn; Facing = facing; Budget = budget;
             var dirty = new HashSet<Cell>(trash); var blocked = new HashSet<Cell>(obstacles);
             if (dirty.Count == 0 || !Contains(spawn) || blocked.Contains(spawn) || !Enum.IsDefined(typeof(Heading), facing))
                 throw new ArgumentException("Invalid spawn or empty objective.");
@@ -81,11 +83,16 @@ namespace EcoBotBuilders.Level1
             foreach (var b in program) { cost++; if (b != null) cost += b.Body.Count; }
             return cost;
         }
+        // Level 1 default budget overload; preserved so existing callers and tests stay unchanged.
         public static bool Compile(IList<Block> program, out List<Block> actions, out string error)
+        {
+            return Compile(program, Budget, out actions, out error);
+        }
+        public static bool Compile(IList<Block> program, int budget, out List<Block> actions, out string error)
         {
             actions = new List<Block>(); error = "";
             if (program == null || program.Count == 0) { error = "Add a Move block to begin!"; return false; }
-            if (Cost(program) > Budget) { error = "Use 10 blocks or fewer. Repeat helps save space!"; return false; }
+            if (Cost(program) > budget) { error = "Use " + budget + " blocks or fewer. Repeat helps save space!"; return false; }
             foreach (var b in program)
             {
                 if (b == null || !Enum.IsDefined(typeof(Command), b.Kind)) { error = "Unknown block."; return false; }
@@ -110,6 +117,9 @@ namespace EcoBotBuilders.Level1
     public sealed class ProgramEditor
     {
         public readonly List<Block> Main = new List<Block>();
+        public readonly int Budget;
+        public ProgramEditor() : this(Programs.Budget) { }
+        public ProgramEditor(int budget) { Budget = budget < 1 ? Programs.Budget : budget; }
         public List<Block> Container(Block parent) { return parent == null ? Main : parent.Body; }
         bool ValidParent(Block parent) { return parent == null || (Main.Contains(parent) && parent.Kind == Command.Repeat); }
         public bool Insert(Command kind, Block parent, int index, out string error)
@@ -118,7 +128,7 @@ namespace EcoBotBuilders.Level1
             if (!ValidParent(parent)) { error = "Choose Main or a Repeat body."; return false; }
             if (!Enum.IsDefined(typeof(Command), kind)) { error = "Unknown block."; return false; }
             if (parent != null && kind == Command.Repeat) { error = "Repeat goes in Main; its body holds actions."; return false; }
-            if (Programs.Cost(Main) >= Programs.Budget) { error = "All 10 slots are full. Remove a block or use Repeat."; return false; }
+            if (Programs.Cost(Main) >= Budget) { error = "All " + Budget + " slots are full. Remove a block or use Repeat."; return false; }
             var list = Container(parent);
             list.Insert(Math.Max(0, Math.Min(index, list.Count)), new Block(kind)); return true;
         }
@@ -172,7 +182,7 @@ namespace EcoBotBuilders.Level1
             error = "";
             if (State == Phase.Running || State == Phase.Paused) { error = "Stop or finish this run first."; return false; }
             List<Block> compiled;
-            if (!Programs.Compile(program, out compiled, out error)) return false;
+            if (!Programs.Compile(program, Level.Budget, out compiled, out error)) return false;
             Reset(); actions = compiled; State = Phase.Running; Message = "Watch your program, one block at a time."; return true;
         }
         public void Pause() { if (State == Phase.Running) State = Phase.Paused; }

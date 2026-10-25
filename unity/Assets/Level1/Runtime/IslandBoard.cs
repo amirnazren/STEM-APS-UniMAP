@@ -7,15 +7,21 @@ namespace EcoBotBuilders.Level1.View
     public sealed class IslandBoard
     {
         readonly Dictionary<Cell, RawImage> litter = new Dictionary<Cell, RawImage>();
+        readonly Dictionary<Cell, RawImage> cleaned = new Dictionary<Cell, RawImage>();
         readonly RectTransform robot;
         readonly Text heading, popup;
         readonly RectTransform headingRect;
+        readonly BoardTheme theme;
         float popClock;
         Vector2 popOrigin;
         public static Vector2 Project(Cell c) { return new Vector2(120 + (c.X + c.Y) * 67, 370 + (c.X - c.Y) * 33); }
         static Vector2[] HeadingOffsets = { new Vector2(43,21), new Vector2(43,-21), new Vector2(-43,-21), new Vector2(-43,21) };
+        // Level 1 keeps grass/litter/stone; Level 2 passes its own dusty/clean panel art.
         public IslandBoard(Transform root, LevelDefinition level)
+            : this(root, level, new BoardTheme { Tile = "grass", Target = "litter", Cleaned = null, Obstacle = "stone", TargetW = 64, TargetH = 64, TargetLift = 40 }) { }
+        public IslandBoard(Transform root, LevelDefinition level, BoardTheme boardTheme)
         {
+            theme = boardTheme;
             // Tiles are drawn back-to-front. Surface centres align with the generated tile's diamond.
             for (int depth = -(level.Height - 1); depth < level.Width; depth++)
                 for (int y = 0; y < level.Height; y++)
@@ -23,18 +29,26 @@ namespace EcoBotBuilders.Level1.View
                     {
                         if (x - y != depth) continue;
                         var p = Project(new Cell(x,y));
-                        IslandUI.Art("grass", root, p.x - 75, p.y - 54.3f, 150, 117);
+                        IslandUI.Art(theme.Tile, root, p.x - 75, p.y - 54.3f, 150, 117);
                     }
             var start = Project(level.Spawn);
             var startText = IslandUI.Label("START", root, start.x - 30, start.y + 18, 60, 20, 11, IslandUI.Cream, true);
             startText.alignment = TextAnchor.MiddleCenter;
             foreach (var c in level.Obstacles)
             {
-                var p = Project(c); IslandUI.Art("stone", root, p.x - 42, p.y - 72, 84, 84);
+                var p = Project(c); IslandUI.Art(theme.Obstacle, root, p.x - 42, p.y - 72, 84, 84);
             }
+            bool hasCleaned = !string.IsNullOrEmpty(theme.Cleaned);
             foreach (var c in level.Trash)
             {
-                var p = Project(c); litter.Add(c, IslandUI.Art("litter", root, p.x - 32, p.y - 40, 64, 64));
+                var p = Project(c);
+                // A permanent "cleaned" sprite is drawn under the dirty one so Clean reveals it (Level 2 panels).
+                if (hasCleaned)
+                {
+                    var clean = IslandUI.Art(theme.Cleaned, root, p.x - theme.TargetW / 2, p.y - theme.TargetLift, theme.TargetW, theme.TargetH);
+                    clean.gameObject.SetActive(false); cleaned.Add(c, clean);
+                }
+                litter.Add(c, IslandUI.Art(theme.Target, root, p.x - theme.TargetW / 2, p.y - theme.TargetLift, theme.TargetW, theme.TargetH));
             }
             heading = IslandUI.Label("➜", root, 0,0,46,46,35,IslandUI.Cream,true);
             heading.alignment = TextAnchor.MiddleCenter; headingRect = heading.rectTransform;
@@ -49,11 +63,13 @@ namespace EcoBotBuilders.Level1.View
         public void Reset(PuzzleSession state)
         {
             foreach (var pair in litter) pair.Value.gameObject.SetActive(state.HasTrash(pair.Key));
+            foreach (var pair in cleaned) pair.Value.gameObject.SetActive(!state.HasTrash(pair.Key));
             popup.text = ""; popClock = 0; Position(state.Position, state.Position, 1, state.Facing, false);
         }
         public void Clean(Cell cell)
         {
             RawImage image; if (litter.TryGetValue(cell, out image)) image.gameObject.SetActive(false);
+            RawImage shine; if (cleaned.TryGetValue(cell, out shine)) shine.gameObject.SetActive(true);
             popOrigin = Project(cell); popClock = 1.1f; popup.text = "+1 token";
         }
         public void Position(Cell from, Cell to, float t, Heading facing, bool bounce)

@@ -17,11 +17,11 @@ with tempfile.TemporaryDirectory(prefix='ecobot-api-') as temp:
     names=['UnityEngine','UnityEngine.CoreModule','UnityEngine.UI','UnityEngine.AudioModule','UnityEngine.TextRenderingModule','UnityEngine.UIModule','UnityEngine.InputLegacyModule','UnityEngine.IMGUIModule']
     command=['mcs','-langversion:7.2','-warnaserror','-target:library','-out:'+str(folder/'ApiCheck.dll')]
     command+=['-r:'+str(folder/(name+'.dll')) for name in names]
-    command+=[str(ROOT/'unity/Assets/Level1/Core/Puzzle.cs')]
-    command+=map(str, sorted((ROOT/'unity/Assets/Level1/Runtime').glob('*.cs')))
+    command+=list(map(str, sorted((ROOT/'unity/Assets/Level1/Core').glob('*.cs'))))
+    command+=list(map(str, sorted((ROOT/'unity/Assets/Level1/Runtime').glob('*.cs'))))
     result=subprocess.run(command,capture_output=True,text=True)
     print(result.stdout+result.stderr)
     if result.returncode: raise SystemExit(result.returncode)
-    report={'check':'Secondary source/API compilation only','result':'passed','errors':0,'warnings':0,'compiler':'Mono mcs 6.8.0.105','references':dict(packages),'files':'Puzzle.cs + all Level1/Runtime/*.cs','unity_2022_editor_compilation_verified':False,'editor_helpers_compiled':False,'caveat':'Older reference DLLs, NOT a Unity build. Editor imports, scene deserialization, package resolution and interaction remain unverified.'}
+    report={'check':'Secondary source/API compilation only','result':'passed','errors':0,'warnings':0,'compiler':'Mono mcs 6.8.0.105','references':dict(packages),'files':'all Level1/Core/*.cs + all Level1/Runtime/*.cs','unity_2022_editor_compilation_verified':False,'editor_helpers_compiled':False,'caveat':'Older reference DLLs, NOT a Unity build. Editor imports, scene deserialization, package resolution and interaction remain unverified.'}
     (ROOT/'docs/level1/API_COMPILE.json').write_text(json.dumps(report,indent=2)+'\n')
     print('Reference API compilation passed with warnings-as-errors. This is NOT Unity Editor compilation.')

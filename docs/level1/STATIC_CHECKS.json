@@ -4,7 +4,7 @@
     {
       "name": "asset meta coverage and unique GUIDs",
       "pass": true,
-      "detail": "46 meta files; missing=[]; malformed/duplicate/orphan=[]"
+      "detail": "53 meta files; missing=[]; malformed/duplicate/orphan=[]"
     },
     {
       "name": "scene YAML and unique fileIDs",
@@ -32,9 +32,14 @@
       "detail": "One serialized camera and AudioListener"
     },
     {
-      "name": "first enabled build scene",
+      "name": "build scene list order (Level Select first, game second)",
       "pass": true,
-      "detail": "MainGameScene path and GUID match"
+      "detail": "Scene 0 = LevelSelectScene, Scene 1 = MainGameScene; GUIDs match their meta"
+    },
+    {
+      "name": "first scene (Level Select) boots cleanly with its own controller",
+      "pass": true,
+      "detail": "unity/Assets/Level1/Runtime/LevelSelectScreen.cs; refs=all resolve"
     },
     {
       "name": "project settings YAML and asset GUID references",
@@ -99,7 +104,7 @@
     {
       "name": "all Resources texture and font lookups",
       "pass": true,
-      "detail": "Level1/Interface, Level1/InterfaceBold, Level1/grass, Level1/litter, Level1/robot, Level1/stone"
+      "detail": "8 assets: Level1/Interface, Level1/InterfaceBold, Level1/grass, Level1/litter, Level1/panel_clean, Level1/panel_dusty, Level1/robot, Level1/stone"
     },
     {
       "name": "Level1/Interface UI symbol coverage",
@@ -122,6 +127,16 @@
       "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
     },
     {
+      "name": "Level1/panel_clean image/import settings",
+      "pass": true,
+      "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
+    },
+    {
+      "name": "Level1/panel_dusty image/import settings",
+      "pass": true,
+      "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
+    },
+    {
       "name": "Level1/robot image/import settings",
       "pass": true,
       "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
@@ -132,12 +147,12 @@
       "detail": "Valid transparent 1024\u00d71024 PNG, local texture importer"
     },
     {
-      "name": "existing logic evidence retained without rerun",
+      "name": "logic suites re-run fresh against current shared model (L1 + L2)",
       "pass": true,
-      "detail": "Model and test harness byte-identical to tested c7de4eb; existing 30/30 results reused"
+      "detail": "L1 harness == c7de4eb; L1: RESULT: 30 passed, 0 failed. Unity Editor / UI / Android NOT executed. | L2: RESULT: 12 passed, 0 failed. Unity Editor / UI / Android NOT executed."
     }
   ],
-  "passed": 27,
+  "passed": 30,
   "failed": 0,
   "unity_editor_verified": false,
   "android_verified": false,
@@ -148,14 +163,18 @@
   ],
   "source_sha256": {
     "unity/Assets/Editor/URPBootstrap.cs": "0bb090a9e1e98b9ec125ca6dc32dae2df23aa9d9f89429afbb2bab895ce8e432",
-    "unity/Assets/Level1/Core/Puzzle.cs": "9dd2c6b4e1520d87b69536a8d642ce9d29bb7ef6cf39fd2feb24d050af583211",
+    "unity/Assets/Level1/Core/Levels.cs": "ca1f24a99dd01bae35ec100d157a5382b718ced5f7499badbf50cdeb8997bb4e",
+    "unity/Assets/Level1/Core/Puzzle.cs": "7fffb732755e29221da505ac39e1df2c4ca84c31744282b4ae0ffefe5474b823",
     "unity/Assets/Level1/Editor/Level1SceneSetup.cs": "27bbfc1404c7b221d067515942e20618fd5c814ca0c9fd493673debb6cb3cdac",
     "unity/Assets/Level1/Runtime/BlockDrop.cs": "16935e47aa9be34058f8a4140e31685e78c14484946167bf19c7ad71df203d1b",
     "unity/Assets/Level1/Runtime/BlockPointer.cs": "804a56bc21319d0254a7b4fa0e8bd85727175efa8542b3a14e91bf16da652300",
+    "unity/Assets/Level1/Runtime/GameProgress.cs": "140909988a8a7c5effee14cfbb3ac1e4f81f3c778c9f40bb1d1328fe43270294",
     "unity/Assets/Level1/Runtime/IslandAudio.cs": "8dcafa45ef5b82047953d318cca9a9319f0a54309dfe6837259418b04dc9a015",
-    "unity/Assets/Level1/Runtime/IslandBoard.cs": "54f78684b09484ad7807e745a231f0b1068be18be042e8b37123837d9b4aa55f",
+    "unity/Assets/Level1/Runtime/IslandBoard.cs": "dffed967af2660787a69a9d600d8e4624e89b6a5d4da7e5cf96499337f9b7344",
     "unity/Assets/Level1/Runtime/IslandUI.cs": "3dca6ab3f459bda9b3c2dc36ed984310c395c21e29712bf45d53318351e15cb5",
-    "unity/Assets/Level1/Runtime/Level1Game.cs": "9ad8129f8fd46211b6054c21b96272f55cb8fe76dbaba2c975009dc0f3ed905d",
+    "unity/Assets/Level1/Runtime/Level1Game.cs": "d4797f08d8ab1b1feaa718f18a1c766903c84e09eebf7879d3640c8a0f8e9847",
+    "unity/Assets/Level1/Runtime/LevelPresentation.cs": "f42e293498f5353767b57a16f6a1e643122a9057c3167bab707776b53bc58b48",
+    "unity/Assets/Level1/Runtime/LevelSelectScreen.cs": "9d84fec2ac31a6b36a20f096424f5e967e2d8c7d1bf8f713dda73cd3816a5c18",
     "unity/Assets/Scenes/MainGameScene.unity": "e0219834332fa05b06e5b6aca6261f5210eb2c8d4024e05d8087fc5b400b07e3",
     "unity/Packages/manifest.json": "23ce375ea882090ae9044976a371434396ae7031160f9eaaeeac383bcd6e01ba"
   }

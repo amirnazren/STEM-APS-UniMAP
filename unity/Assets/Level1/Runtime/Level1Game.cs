@@ -2,16 +2,25 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace EcoBotBuilders.Level1.View
 {
-    /// <summary>The only Level 1 scene controller. Legacy managers are deliberately not instantiated.</summary>
+    /// <summary>
+    /// The shared offline game scene controller. It renders EITHER level (1 or 2) from the
+    /// data-driven <see cref="LevelTheme"/> + the Unity-free <see cref="LevelCatalog"/>, driving
+    /// the same deterministic <see cref="PuzzleSession"/>. Legacy managers are never instantiated.
+    /// </summary>
     [DisallowMultipleComponent]
     public sealed class Level1Game : MonoBehaviour
     {
         const float ActionSeconds = .55f;
-        readonly ProgramEditor editor = new ProgramEditor();
+        const string GameSceneName = "MainGameScene";
+        const string SelectSceneName = "LevelSelectScene";
+        ProgramEditor editor;
+        LevelTheme theme;
+        int levelId;
         readonly Dictionary<Block,Image> rowImages = new Dictionary<Block,Image>();
         readonly List<Button> editButtons = new List<Button>();
         PuzzleSession session;
@@ -24,7 +33,7 @@ namespace EcoBotBuilders.Level1.View
         Text progress, message, budget, targetLabel, pauseLabel, muteLabel, phaseLabel;
         Button run;
         Block selectedParent;
-        bool rebuild, paused, animating, dragging, hintShown;
+        bool rebuild, paused, animating, dragging;
         int hintTier;
         float elapsed;
         Cell from, to;
@@ -37,14 +46,22 @@ namespace EcoBotBuilders.Level1.View
 
         void Awake()
         {
-            Debug.Log("[Tideleaf] Booting offline Level 1 from shared puzzle definition.");
+            levelId = GameProgress.ResolveSelected();
+            theme = LevelTheme.For(levelId);
+            Debug.Log("[Eco-Bot] Booting offline Level " + levelId + " (" + theme.Title + ") from shared puzzle definition.");
             regular = Resources.Load<Font>("Level1/Interface"); bold = Resources.Load<Font>("Level1/InterfaceBold");
-            if (!regular || !bold) { Debug.LogError("[Tideleaf] Bundled UI fonts missing."); enabled=false; return; }
+            if (!regular || !bold) { Debug.LogError("[Eco-Bot] Bundled UI fonts missing."); enabled=false; return; }
             IslandUI.Regular=regular; IslandUI.Bold=bold;
-            session = new PuzzleSession(LevelDefinition.Tideleaf()); sounds = gameObject.AddComponent<IslandAudio>();
-            EnsureCameraAndInput(); BuildUI(); RefreshProgram(); SetMessage(session.Message); UpdateHUD();
-            Debug.Log("[Tideleaf] Scene ready. Goal derives from " + session.Goal + " litter cells. No network connection is used.");
+            var level = LevelCatalog.Load(levelId);
+            session = new PuzzleSession(level); editor = new ProgramEditor(level.Budget);
+            sounds = gameObject.AddComponent<IslandAudio>();
+            EnsureCameraAndInput(); BuildUI(); RefreshProgram(); SetMessage(theme.Intro); UpdateHUD();
+            Debug.Log("[Eco-Bot] Scene ready. Goal derives from " + session.Goal + " target cells, budget " + level.Budget + ". No network connection is used.");
         }
+        void LoadScene(string name) { CloseModal(); EndDrag(); SceneManager.LoadScene(name); }
+        void GoToLevelSelect() { LoadScene(SelectSceneName); }
+        void GoToNextLevel(int nextId) { GameProgress.SelectedLevel = nextId; LoadScene(GameSceneName); }
+        List<Block> ExampleProgram() { return levelId == 2 ? LevelCatalog.SolarPanelSolution() : Programs.Example(); }
         void EnsureCameraAndInput()
         {
             if (!Camera.main)
@@ -68,20 +85,21 @@ namespace EcoBotBuilders.Level1.View
             root.anchorMin=root.anchorMax=new Vector2(.5f,.5f); root.pivot=new Vector2(.5f,.5f);
             IslandUI.Art("robot",root,24,15,72,72);
             IslandUI.Label("ECO-BOT BUILDERS",root,106,20,420,24,15,IslandUI.Hex("8DD9C2"),true);
-            IslandUI.Label("Tideleaf Island",root,104,46,560,42,32,IslandUI.Cream,true);
+            IslandUI.Label(theme.Title,root,104,46,560,42,32,IslandUI.Cream,true);
+            IslandUI.Button("Levels",root,700,28,120,48,IslandUI.Cream,GoToLevelSelect);
             IslandUI.Button("?  Help",root,828,28,120,48,IslandUI.Cream,ShowHelp);
             var pause=IslandUI.Button("Pause",root,960,28,120,48,IslandUI.Cream,TogglePause); pauseLabel=pause.GetComponentInChildren<Text>();
             var mute=IslandUI.Button("Sound: on",root,1092,28,160,48,IslandUI.Cream,ToggleMute); muteLabel=mute.GetComponentInChildren<Text>();
             IslandUI.Panel("Header rule",root,28,102,1224,2,IslandUI.Hex("3B696E"));
-            IslandUI.Label("01  /  SKY-ISLE CLEANUP",root,32,119,620,25,14,IslandUI.Hex("8DD9C2"),true);
-            IslandUI.Label("A little code. A cleaner island.",root,32,149,640,35,27,IslandUI.Cream,true);
+            IslandUI.Label(theme.HeaderTag,root,32,119,620,25,14,IslandUI.Hex("8DD9C2"),true);
+            IslandUI.Label(theme.HeaderSub,root,32,149,640,35,27,IslandUI.Cream,true);
             progress=IslandUI.Label("",root,32,189,640,34,21,IslandUI.Cream,true);
             // Calm decorative wave glyphs are interface accents, not substitute world geometry.
             for (int i=0;i<8;i++) IslandUI.Label("~  ~",root,45+(i%4)*170,260+(i/4)*250,90,26,24,IslandUI.Hex("265562"));
-            board=new IslandBoard(root,session.Level);
+            board=new IslandBoard(root,session.Level,theme.Board);
             message=IslandUI.Label("",root,32,529,640,58,18,IslandUI.Cream);
             IslandUI.Label("YOUR BLOCKS  ·  tap to add, or drag into your code",root,32,590,650,28,15,IslandUI.Hex("B5DAD7"),true);
-            var commands=new[] {Command.Move,Command.Left,Command.Right,Command.Clean,Command.Repeat};
+            var commands=theme.Palette;
             for (int i=0;i<commands.Length;i++)
             {
                 Command kind=commands[i];
@@ -96,7 +114,7 @@ namespace EcoBotBuilders.Level1.View
             var main=IslandUI.Button("+ Main",root,738,205,126,40,IslandUI.Hex("CDE3D8"),()=>SelectTarget(null),16); editButtons.Add(main);
             IslandUI.Button("Hint",root,878,205,100,40,IslandUI.Hex("F5CB7D"),ShowHint,16);
             IslandUI.Button("Restart",root,992,205,120,40,IslandUI.Hex("E7DCC2"),ConfirmRestart,16);
-            IslandUI.Label("10 slots",root,1124,205,110,40,16,IslandUI.Ink);
+            IslandUI.Label(editor.Budget + " slots",root,1124,205,110,40,16,IslandUI.Ink);
             var viewport=IslandUI.Panel("Program viewport",root,738,258,490,302,IslandUI.Hex("F4E8CB"));
             viewport.raycastTarget=true; viewport.gameObject.AddComponent<RectMask2D>();
             scroll=viewport.gameObject.AddComponent<ScrollRect>(); scroll.horizontal=false; scroll.vertical=true;
@@ -159,8 +177,8 @@ namespace EcoBotBuilders.Level1.View
         }
         void Restart()
         {
-            Stop(); editor.Main.Clear(); selectedParent=null; hintTier=0; hintShown=false; RefreshProgram();
-            SetMessage("Fresh start! Tap Move, then Clean. Watch what each block does.");
+            Stop(); editor.Main.Clear(); selectedParent=null; hintTier=0; RefreshProgram();
+            SetMessage(theme.FreshStart);
         }
         void ConfirmRestart()
         {
@@ -189,10 +207,10 @@ namespace EcoBotBuilders.Level1.View
         void UpdateHUD()
         {
             if(!progress) return;
-            progress.text="Clean tokens  " + session.Tokens + " / " + session.Goal + "     ·     Collect every litter pile";
-            budget.text=Programs.Cost(editor.Main) + " / 10 blocks";
+            progress.text="Clean tokens  " + session.Tokens + " / " + session.Goal + "     ·     " + theme.Objective;
+            budget.text=Programs.Cost(editor.Main) + " / " + editor.Budget + " blocks";
             phaseLabel.text=paused?"Paused — tap Resume to continue":session.State==Phase.Running?"Running · action " + session.Cursor + " / " + session.ActionCount:
-                session.State==Phase.Won?"Island restored!":session.State==Phase.Retry?"Try again — your code is ready to edit":"Build your code, then press Run.";
+                session.State==Phase.Won?theme.WinTitle:session.State==Phase.Retry?"Try again — your code is ready to edit":"Build your code, then press Run.";
             pauseLabel.text=paused?"Resume":"Pause"; muteLabel.text=sounds.Muted?"Sound: off":"Sound: on";
             run.interactable=!Busy && !paused && modal==null;
             foreach(var b in editButtons) if(b) b.interactable=CanEdit;
@@ -269,8 +287,8 @@ namespace EcoBotBuilders.Level1.View
             AddEnd(null,ref y);
             if(editor.Main.Count==0)
             {
-                IslandUI.Label("1. Tap Move in the palette.\n2. Tap Clean.\n3. Press Run to test your idea.\n\nLook for a pattern you can Repeat!",content,20,y+8,440,152,21,IslandUI.Ink);
-                y+=174;
+                IslandUI.Label(theme.EmptyHelp,content,20,y+8,440,172,21,IslandUI.Ink);
+                y+=194;
             }
             content.sizeDelta=new Vector2(476,Mathf.Max(302,y+8));
             Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition=position;
@@ -348,27 +366,36 @@ namespace EcoBotBuilders.Level1.View
         void ShowHelp()
         {
             if(modal!=null) return; SetPaused(true);
-            MakeModal("You are the robot's coder!","Move goes one tile in the arrow's direction. Left / Right turns in place. Clean picks up litter UNDER the robot.\n\nRepeat runs its body 2–4 times. Wrapper + each body block costs one slot. Select Body before adding actions inside it.");
+            MakeModal(theme.HelpTitle,theme.HelpBody);
             ModalButton("Let's build!",90,320,CloseAndResume); ModalButton("Stop / reset",360,320,Stop);
         }
         void ShowHint()
         {
-            if(modal!=null) return; SetPaused(true); hintTier=Mathf.Min(3,hintTier+1); hintShown=true;
-            string[] hints={"", "Look at the litter trail. Move onto a pile, then Clean. The little arrow shows where the robot will go next.",
-                "The first three piles make a straight line. Repeat [Move, Clean] three times. At the corner, turn LEFT and find the next pattern.",
-                "Try this 7-block program:\nRepeat 3 [Move, Clean]\nTurn left\nRepeat 3 [Move, Clean]\nEach Repeat costs 1 + its 2 body blocks = 3 slots."};
-            MakeModal("Hint " + hintTier + " of 3",hints[hintTier]);
+            if(modal!=null) return; SetPaused(true); hintTier=Mathf.Min(3,hintTier+1);
+            MakeModal("Hint " + hintTier + " of 3",theme.Hints[hintTier]);
             ModalButton("Got it",90,320,CloseAndResume);
-            if(hintTier==3) ModalButton("Use example",360,320,()=>{Stop();editor.LoadExample();selectedParent=null;RefreshProgram();SetMessage("Example loaded. Read each Repeat, then press Run!");});
+            if(hintTier==3) ModalButton("Use example",360,320,()=>{Stop();editor.Main.Clear();editor.Main.AddRange(ExampleProgram());selectedParent=null;RefreshProgram();SetMessage("Example loaded. Read each Repeat, then press Run!");});
         }
         void Win()
         {
-            int cost=Programs.Cost(editor.Main),best=PlayerPrefs.GetInt("TideleafBest",99);
-            if(cost<best) { best=cost; PlayerPrefs.SetInt("TideleafBest",cost); PlayerPrefs.Save(); }
+            int cost=Programs.Cost(editor.Main),best=PlayerPrefs.GetInt(theme.BestKey,99);
+            if(cost<best) { best=cost; PlayerPrefs.SetInt(theme.BestKey,cost); PlayerPrefs.Save(); }
+            // Record first-time completion + cosmetic in the persistence layer; this is what unlocks the next level.
+            bool firstTime=!GameProgress.IsCompleted(levelId);
+            GameProgress.MarkCompleted(levelId);
+            int next=GameProgress.NextUnlocked(levelId);
             sounds.Play("win"); UpdateHUD();
-            MakeModal("Island restored!","You collected all " + session.Goal + " clean tokens with " + cost + " blocks.\nBest on this device: " + best + " blocks.\n\n" + (hintShown?"Learning with hints is great coding, too!":"Great problem-solving, eco-engineer!") + "\nCan you explain what your Repeat blocks do?");
-            ModalButton("Try another idea",90,320,()=>{Stop();SetMessage("Your code is saved. Try a different route or fewer blocks.");});
-            ModalButton("Fresh adventure",360,320,Restart);
+            string reward=firstTime && !string.IsNullOrEmpty(theme.RewardName) ? "\nYou earned the " + theme.RewardName + "!" : "";
+            string whatsNext=next!=0 ? "\n\nLevel " + next + " is unlocked!" : "\n\nThat's the last level for now — amazing work!";
+            MakeModal(theme.WinTitle,"You cleaned all " + session.Goal + " " + theme.WinNounPlural + " with " + cost + " blocks.\nBest on this device: " + best + " blocks." + reward + whatsNext + "\nCan you explain what your Repeat blocks do?");
+            if(next!=0)
+            {
+                ModalButton("Next level ▶",90,296,()=>GoToNextLevel(next));
+                ModalButton("Level select",360,296,GoToLevelSelect);
+            }
+            else ModalButton("Level select",90,296,GoToLevelSelect);
+            ModalButton("Try another idea",90,360,()=>{Stop();SetMessage("Your code is saved. Try a different route or fewer blocks.");});
+            ModalButton("Fresh start",360,360,Restart);
         }
     }
 }

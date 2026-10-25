@@ -14,9 +14,13 @@ def guid(path):
     return uuid.uuid5(NS, path.relative_to(ROOT).as_posix()).hex
 
 scene = ASSETS / 'Scenes/MainGameScene.unity'
+select_scene = ASSETS / 'Scenes/LevelSelectScene.unity'
 controller = ASSETS / 'Level1/Runtime/Level1Game.cs'
+select_controller = ASSETS / 'Level1/Runtime/LevelSelectScreen.cs'
 # Camera and offline bootstrap are serialized scene objects. No external package MonoBehaviours.
-scene.write_text('''%YAML 1.1
+# Both scenes share the SAME serialized shape: one controller GameObject (which builds its own
+# Canvas/UI/input in Awake) plus a serialized Main Camera + AudioListener.
+SCENE_TEMPLATE = ('''%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &100
 GameObject:
@@ -29,7 +33,7 @@ GameObject:
   - component: {fileID: 101}
   - component: {fileID: 102}
   m_Layer: 0
-  m_Name: Tideleaf Island - Offline Level 1
+  m_Name: SCENE_ROOT_NAME
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -160,7 +164,9 @@ SceneRoots:
   m_Roots:
   - {fileID: 101}
   - {fileID: 201}
-'''.replace('CONTROLLER_GUID', guid(controller)))
+''')
+scene.write_text(SCENE_TEMPLATE.replace('CONTROLLER_GUID', guid(controller)).replace('SCENE_ROOT_NAME', 'Tideleaf Island - Offline Level 1'))
+select_scene.write_text(SCENE_TEMPLATE.replace('CONTROLLER_GUID', guid(select_controller)).replace('SCENE_ROOT_NAME', 'Level Select - Offline Menu'))
 
 for path in sorted(ASSETS.rglob('*')):
     if path.suffix == '.meta' or path.name.startswith('.'): continue
@@ -233,8 +239,8 @@ for path in sorted(ASSETS.rglob('*')):
     meta.write_text(text)
 
 build = ROOT / 'unity/ProjectSettings/EditorBuildSettings.asset'
-if not build.exists():
-    build.write_text('''%YAML 1.1
+# Level Select boots first (scene 0); the shared game scene is scene 1.
+build.write_text('''%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1045 &1
 EditorBuildSettings:
@@ -242,8 +248,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/LevelSelectScene.unity
+    guid: SELECT_GUID
+  - enabled: 1
     path: Assets/Scenes/MainGameScene.unity
-    guid: SCENE_GUID
+    guid: MAIN_GUID
   m_configObjects: {}
-'''.replace('SCENE_GUID', guid(scene)))
-print('Scene authored; missing meta files filled without changing existing GUIDs.')
+'''.replace('SELECT_GUID', guid(select_scene)).replace('MAIN_GUID', guid(scene)))
+print('Scenes authored (MainGameScene + LevelSelectScene); build list set; missing meta filled without changing existing GUIDs.')

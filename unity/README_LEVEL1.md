@@ -105,3 +105,62 @@ The downloadable ZIP contains tracked `unity/Assets`, `unity/Packages`, `unity/P
 7. Pause mid-move and wait; robot, progress and step do not advance. Resume continues. Open Help mid-run. Switch window focus away; return and Resume explicitly. Restart asks before clearing code.
 8. Test Game view at **1280×720**, **1920×1080**, **2340×1080**, and **844×390**; verify text remains readable, no button occlusion, scrolling works, and safe-area/portrait handling is sensible. Check real mouse and touch separately.
 9. With Android Build Support installed, build the first enabled scene to a landscape device. Verify taps/drags, sound/mute, pause on background, orientation and return to app. This build and runtime interaction are outstanding, not proven by the source checks.
+
+
+
+---
+
+## Level 2 — "Solar Panel Path" & the progression system
+
+Level 2 ships alongside Level 1 using the **same** Unity-free puzzle model (`Core/Puzzle.cs`)
+and one shared scene controller (`Runtime/Level1Game.cs`). There is no forked gameplay logic;
+each level is pure data loaded from `Core/Levels.cs` (`LevelCatalog`) plus a `LevelTheme`
+(`Runtime/LevelPresentation.cs`) for its copy, palette and art.
+
+### The level
+- **Concept:** Sequencing & Loops. A straight row of **6 dusty solar panels** on a 7×3 grid.
+- **Budget:** **6 blocks.** Palette is **Move / Clean / Repeat** (no turns).
+- **Why a loop is required:** cleaning all 6 panels with a flat Move/Clean list costs **12 blocks**,
+  which does not fit in 6 — so the child must use a `Repeat` loop.
+- **Known solution:** `Repeat 3 [Move, Clean]` then `Repeat 3 [Move, Clean]` (cost 6, 12 actions).
+  (An alternative `Repeat 4 + Repeat 2` split also solves it.)
+- **Visual:** each panel shows a **dusty** sprite that is replaced by a **clean, shiny** sprite when
+  the robot cleans the tile (`Resources/Level1/panel_dusty.png`, `panel_clean.png`, 2.5D isometric).
+- **Reward:** the **Solar Visor** cosmetic (slug `solar_visor`, matching `backend/config/gameConfig.js`).
+
+### Progression / unlock system (offline, device-local)
+- `Runtime/GameProgress.cs` persists completion with **Unity `PlayerPrefs`** (keys
+  `EcoBot.CompletedLevels`, `EcoBot.Cosmetics`). No backend or network is used.
+- The unlock rule itself lives in the **Unity-free** `Progression` class in `Core/Levels.cs`
+  (Level 1 is always open; a level unlocks only when the one before it is completed). The
+  persistence layer and the UI both defer to it, so **the lock is enforced in the state layer**,
+  not just hidden in the UI. `GameProgress.ResolveSelected()` additionally refuses to load a locked
+  level even if a scene jump is attempted.
+
+### Navigation
+- The build now opens on a **Level Select** screen (`Runtime/LevelSelectScreen.cs`,
+  `Scenes/LevelSelectScene.unity`, build scene 0). Level 1 is always playable; Level 2 shows
+  **"Locked · Finish Level 1"** until Level 1 is completed, then becomes **Play ▶**.
+- The Level 1/2 **victory dialog** adds a **"Next level ▶"** button (only when the next level is
+  unlocked) and a **"Level select"** button, while keeping the existing **"Try another idea"**
+  (retry) and **"Fresh start"** options.
+- `Scenes/MainGameScene.unity` (build scene 1) is the shared game scene for both levels.
+
+### Verification evidence (this environment)
+- **Level 2 logic tests:** `tools/level2-tests/Tests.cs` — **12/12 passed** (mcs/mono). Covers the
+  known solution solving the level, exact-budget and over-budget enforcement, the flat-no-loop
+  program being impossible in 6 blocks, per-level budget enforcement in the session layer, and the
+  pure unlock rules. Evidence: `docs/level2/LEVEL2_TESTS.json`.
+- **Level 1 logic tests:** `tools/level1-tests/Tests.cs` re-run against the (now budget-aware)
+  shared model — **30/30 passed**. Evidence: `docs/level1/LOGIC_TESTS.json`.
+- **Static audit:** `tools/level1-tests/static_audit.py` — **30/30 checks passed** (asset meta,
+  both scenes, build-list order, asmdef boundaries, resource/art validation incl. the two panel
+  PNGs, and a fresh re-run of both logic suites). Evidence: `docs/level1/STATIC_CHECKS.json`.
+- **Reference API compile:** `tools/level1-tests/api_compile.py` — Core + all Runtime scripts
+  compile with warnings-as-errors against reference assemblies. Evidence: `docs/level1/API_COMPILE.json`.
+
+### ⚠️ UNVERIFIED here
+Unity **Editor import, Play Mode, UPM package resolution, scene deserialization and the Android
+build are NOT verified** in this environment (no Unity Editor / GPU). The checks above are
+source-, logic- and serialization-level only. Open the project in Unity **2022.3.21f1** and press
+Play on `LevelSelectScene` to validate interaction and the on-device build.
