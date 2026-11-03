@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Eco-Bot Builders — Game Overview, Rewards & Features</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}]});"></script>
+  <style>
+    @page {
+      size: A4;
+      margin: 2.2cm 1.8cm 2.0cm 1.8cm;
+      @top-center {
+        content: string(doctitle);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+        letter-spacing: 0.5px;
+      }
+      @bottom-center {
+        content: "Page " counter(page);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 8.5pt;
+        color: #64748b;
+      }
+    }
+    @page :first {
+      margin: 0;
+      @top-center { content: none; }
+      @bottom-center { content: none; }
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 9.8pt;
+      line-height: 1.5;
+      color: #1e293b;
+      string-set: doctitle "";
+      background: #ffffff;
+    }
+
+    h1 {
+      string-set: doctitle content();
+    }
+
+    pre, table, figure, img, svg, .mermaid, blockquote, .equation, code {
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-wrap: break-word;
+    }
+    pre {
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    figure img, figure svg {
+      max-width: 100%;
+      max-height: 40vh;
+      height: auto;
+    }
+    a {
+      word-break: break-all;
+    }
+    .katex-display {
+      overflow-x: auto;
+    }
+
+    /* Page Breaks */
+    .page-break {
+      page-break-before: always;
+    }
+    h1, h2, h3 {
+      page-break-after: avoid;
+    }
+    tr, li, .card, .feature-box, .step-item {
+      page-break-inside: avoid;
+    }
+
+    /* COVER PAGE */
+    .cover {
+      page: cover;
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      position: relative;
+      overflow: hidden;
+      page-break-after: always;
+      background: linear-gradient(155deg, #062420 0%, #0d383b 35%, #104f4a 70%, #051a17 100%);
+      color: #ffffff;
+      text-align: center;
+      box-sizing: border-box;
+      padding: 60px 45px 50px 45px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cover-badge-top {
+      display: inline-block;
+      padding: 6px 18px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      border-radius: 20px;
+      font-size: 9pt;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #34d399;
+      margin-bottom: 15px;
+    }
+
+    .cover h1 {
+      font-size: 34pt;
+      font-weight: 800;
+      color: #ffffff;
+      text-align: center;
+      letter-spacing: 1px;
+      line-height: 1.2;
+      margin: 0 0 10px 0;
+      padding: 0 15px;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      text-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      string-set: doctitle "";
+    }
+
+    .cover .subtitle {
+      font-size: 16pt;
+      font-weight: 600;
+      color: #a7f3d0;
+      margin: 0 0 14px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .cover .tagline {
+      font-size: 11pt;
+      font-weight: 400;
+      color: #e2e8f0;
+      max-width: 580px;
+      margin: 0 auto 25px auto;
+      line-height: 1.45;
+    }
+
+    .cover-hero-box {
+      width: 100%;
+      max-width: 540px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 24px 20px 20px 20px;
+      box-sizing: border-box;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .cover-robot-img {
+      width: 145px;
+      height: 145px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+      margin-bottom: 14px;
+    }
+
+    .cover-specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .cover-spec-card {
+      background: rgba(15, 23, 42, 0.45);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .cover-spec-title {
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #6ee7b7;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .cover-spec-desc {
+      font-size: 9.5pt;
+      color: #f8fafc;
+      font-weight: 500;
+    }
+
+    .cover-footer {
+      width: 100%;
+      max-width: 580px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      padding-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8.5pt;
+      color: #94a3b8;
+    }
+
+    /* SECTION TITLES & TYPOGRAPHY */
+    .section {
+      margin-bottom: 20px;
+    }
+
+    h2.section-title {
+      font-size: 13.5pt;
+      font-weight: 700;
+      color: #0c4a40;
+      margin: 0 0 10px 0;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid #10b981;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title-badge {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      background: #10b981;
+      color: #ffffff;
+      border-radius: 4px;
+      font-size: 9.5pt;
+      font-weight: 700;
+      text-align: center;
+      line-height: 22px;
+    }
+
+    p {
+      margin: 0 0 9px 0;
+      color: #334155;
+    }
+
+    /* SECTION 1: WHAT IS ECO-BOT BUILDERS */
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .preview-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .preview-img {
+      width: 100%;
+      height: auto;
+      max-height: 140px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .preview-caption {
+      font-size: 7.8pt;
+      color: #64748b;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    .highlight-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #10b981;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+
+    .highlight-card-title {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 4px;
+    }
+
+    .highlight-card-text {
+      font-size: 8.5pt;
+      color: #1e293b;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* SECTION 2: HOW TO PLAY - CORE LOOP */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .step-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: 3px solid #10b981;
+      border-radius: 6px;
+      padding: 10px 11px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .step-number {
+      background: #059669;
+      color: #ffffff;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 8.5pt;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .step-text {
+      font-size: 8.3pt;
+      color: #334155;
+      margin: 0;
+      line-height: 1.38;
+    }
+
+    /* SECTION 3: CURRICULUM TABLE */
+    table.curriculum-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      font-size: 8.5pt;
+    }
+
+    table.curriculum-table thead th {
+      background: #0f4c42;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 6px 9px;
+      text-align: left;
+      border-bottom: 2px solid #047857;
+      font-size: 8.2pt;
+      letter-spacing: 0.3px;
+    }
+
+    table.curriculum-table thead th.center {
+      text-align: center;
+    }
+
+    table.curriculum-table tbody td {
+      padding: 5px 9px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      line-height: 1.3;
+    }
+
+    table.curriculum-table tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    table.curriculum-table tbody tr:hover {
+      background: #f0fdf4;
+    }
+
+    table.curriculum-table td.level-col {
+      font-weight: 700;
+      color: #047857;
+      text-align: center;
+      width: 6%;
+    }
+
+    table.curriculum-table td.title-col {
+      font-weight: 600;
+      color: #0f172a;
+      width: 25%;
+    }
+
+    table.curriculum-table td.concept-col {
+      color: #334155;
+      width: 27%;
+    }
+
+    table.curriculum-table td.budget-col {
+      text-align: center;
+      font-weight: 600;
+      color: #0369a1;
+      width: 14%;
+    }
+
+    table.curriculum-table td.reward-col {
+      font-weight: 600;
+      color: #b45309;
+      width: 28%;
+    }
+
+    .note-box {
+      background: #ecfdf5;
+      border-left: 3.5px solid #10b981;
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      font-size: 8.4pt;
+      color: #065f46;
+      margin-top: 6px;
+      margin-bottom: 14px;
+    }
+
+    /* SECTION 4: REWARDS */
+    .rewards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .reward-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .reward-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .reward-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5pt;
+      font-weight: 700;
+    }
+
+    .reward-icon.cosmetic { background: #fef3c7; color: #b45309; }
+    .reward-icon.token { background: #dcfce7; color: #15803d; }
+    .reward-icon.progression { background: #e0f2fe; color: #0369a1; }
+    .reward-icon.certificate { background: #f3e8ff; color: #7e22ce; }
+
+    .reward-title {
+      font-size: 9.2pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .reward-body {
+      font-size: 8.5pt;
+      color: #334155;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* SECTION 5: STEM COMPETENCIES */
+    .competencies-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+    }
+
+    .comp-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 3.5px solid #0d9488;
+      border-radius: 6px;
+      padding: 9px 12px;
+    }
+
+    .comp-name {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #0f766e;
+      margin-bottom: 3px;
+    }
+
+    .comp-detail {
+      font-size: 8.3pt;
+      color: #475569;
+      line-height: 1.35;
+      margin: 0 0 4px 0;
+    }
+
+    .comp-code {
+      display: inline-block;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 7.6pt;
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .stem-badges {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 8.3pt;
+      color: #334155;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+    }
+
+    .stem-badge-tag {
+      font-weight: 700;
+      color: #047857;
+      text-transform: uppercase;
+      font-size: 7.5pt;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* SECTION 6: ADAPTIVE HINT SYSTEM */
+    .hints-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+    }
+
+    .hint-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: 3.5px solid #10b981;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .hint-card.t1 { border-top-color: #3b82f6; }
+    .hint-card.t2 { border-top-color: #8b5cf6; }
+    .hint-card.t3 { border-top-color: #f59e0b; }
+
+    .hint-tier-tag {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+
+    .hint-tier-name {
+      font-size: 9.2pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 5px;
+    }
+
+    .hint-card.t1 .hint-tier-name { color: #1d4ed8; }
+    .hint-card.t2 .hint-tier-name { color: #6d28d9; }
+    .hint-card.t3 .hint-tier-name { color: #b45309; }
+
+    .hint-body {
+      font-size: 8.3pt;
+      color: #334155;
+      line-height: 1.38;
+      margin: 0;
+    }
+
+    .hint-note {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 3.5px solid #f59e0b;
+      border-radius: 0 6px 6px 0;
+      padding: 8px 12px;
+      font-size: 8.4pt;
+      color: #92400e;
+      margin-top: 6px;
+    }
+
+    /* SECTION 7: TEACHER FEATURES */
+    .teacher-container {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 14px;
+      align-items: start;
+      margin-top: 8px;
+      margin-bottom: 12px;
+    }
+
+    .teacher-features-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .teacher-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 7px 10px;
+    }
+
+    .teacher-item-title {
+      font-size: 8.6pt;
+      font-weight: 700;
+      color: #0c4a40;
+      margin-bottom: 2px;
+    }
+
+    .teacher-item-desc {
+      font-size: 8.1pt;
+      color: #475569;
+      line-height: 1.32;
+      margin: 0;
+    }
+
+    .dashboard-preview-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .dashboard-img {
+      width: 100%;
+      height: auto;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;
+    }
+
+    .dashboard-caption {
+      font-size: 7.8pt;
+      color: #94a3b8;
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    /* SECTION 8: TECHNICAL SNAPSHOT */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+      margin-bottom: 10px;
+    }
+
+    .tech-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-top: 3px solid #0d9488;
+      border-radius: 6px;
+      padding: 9px 11px;
+    }
+
+    .tech-card-header {
+      font-size: 8.3pt;
+      font-weight: 700;
+      color: #047857;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+
+    .tech-card-content {
+      font-size: 8.2pt;
+      color: #334155;
+      line-height: 1.38;
+      margin: 0;
+    }
+
+    .callout-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-left: 4px solid #059669;
+      border-radius: 6px;
+      padding: 9px 14px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .callout-text {
+      font-size: 8.4pt;
+      color: #064e3b;
+      margin: 0;
+      line-height: 1.38;
+    }
+
+    .repo-pill {
+      background: #065f46;
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 7.6pt;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-left: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================== -->
+  <!-- PAGE 1: TITLE PAGE / COVER                 -->
+  <!-- ========================================== -->
+  <div class="cover">
+    <div>
+      <div class="cover-badge-top">Primary STEM Education Curriculum &amp; Platform</div>
+      <h1>Eco-Bot Builders</h1>
+      <div class="subtitle">Game Overview, Rewards &amp; Features</div>
+      <div class="tagline">A cross-platform STEM coding game for primary school students (ages 7–11)</div>
+    </div>
+
+    <div class="cover-hero-box">
+      <img src="github_repos/STEM-APS-UniMAP/docs/assets/robot.png" alt="Eco-Bot Robot" class="cover-robot-img">
+      
+      <div class="cover-specs-grid">
+        <div class="cover-spec-card">
+          <div class="cover-spec-title">Target Audience</div>
+          <div class="cover-spec-desc">Primary Students (Ages 7–11)</div>
+        </div>
+        <div class="cover-spec-card">
+          <div class="cover-spec-title">Standards Alignment</div>
+          <div class="cover-spec-desc">CSTA Level 1B &amp; NGSS Practices</div>
+        </div>
+        <div class="cover-spec-card">
+          <div class="cover-spec-title">Game Engine</div>
+          <div class="cover-spec-desc">Unity 2022.3 LTS (URP) Cross-Platform</div>
+        </div>
+        <div class="cover-spec-card">
+          <div class="cover-spec-title">Pedagogical Core</div>
+          <div class="cover-spec-desc">Computational Thinking &amp; Eco-Systems</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div><strong>Project:</strong> STEM-APS-UniMAP</div>
+      <div><strong>Initiative:</strong> Universiti Malaysia Perlis (UniMAP)</div>
+      <div><strong>Release Date:</strong> November 2026</div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PAGE 2: GAMEPLAY OVERVIEW & CORE LOOP      -->
+  <!-- ========================================== -->
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">1</span> What Is Eco-Bot Builders?</h2>
+    
+    <div class="intro-grid">
+      <div>
+        <p><strong>Eco-Bot Builders</strong> is a 2.5D isometric puzzle and city-builder game where students program a friendly robot companion — the "Eco-Bot" — using drag-and-drop logic blocks to clean, water, power and rebuild polluted floating islands called "Sky-Isles."</p>
+        <p>Each level wraps a computational-thinking idea (sequences, loops, conditionals, sensors, subroutines) inside a real-world sustainability problem (recycling, solar, wind and hydro energy, bridges, gardens).</p>
+        <p>Students write short block programs (Move, Turn, Clean, Water, Repeat loops, If/Else, subroutines, etc.), press Play, and watch the Eco-Bot carry out their code. The goal is to solve each puzzle within a limited "code capacity" (block budget), which rewards efficient thinking — for example, using a Repeat loop instead of many repeated blocks.</p>
+      </div>
+
+      <div class="preview-box">
+        <img src="github_repos/STEM-APS-UniMAP/docs/assets/sky-isle-preview.png" alt="Sky-Isle Cleanup Preview" class="preview-img">
+        <div class="preview-caption">Figure 1: 2.5D Isometric Sky-Isle cleanup mission with tile grid and solar elements.</div>
+      </div>
+    </div>
+
+    <div class="highlight-card">
+      <div class="highlight-card-title">Code Capacity &amp; Algorithmic Efficiency</div>
+      <div class="highlight-card-text">
+        Unlike open-ended sandbox environments, each Sky-Isle level enforces an intentional <em>block capacity limit</em>. This constraint guides learners to look for repeating movement patterns and algorithmic symmetries, nudging students naturally toward abstraction, loops, and modular programming structures rather than tedious brute-force sequences.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">2</span> How To Play (The Core Loop)</h2>
+    <p>The core gameplay loop structures every student session into six clear, iterative milestones:</p>
+    
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <span class="step-title">Select Level</span>
+        </div>
+        <p class="step-text">Pick a level from the Level Select screen. Levels unlock in order as you complete them.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <span class="step-title">Read Mission</span>
+        </div>
+        <p class="step-text">Read the eco-mission (e.g., "clean all the litter", "clean the dusty solar panels").</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-number">3</span>
+          <span class="step-title">Assemble Code</span>
+        </div>
+        <p class="step-text">Drag logic blocks into the program area, staying within the block budget.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-number">4</span>
+          <span class="step-title">Run &amp; Observe</span>
+        </div>
+        <p class="step-text">Press Play to run the program and watch the Eco-Bot carry out your code in real time.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-number">5</span>
+          <span class="step-title">Adaptive Hints</span>
+        </div>
+        <p class="step-text">If stuck, use the 3-tier adaptive hint system to receive scaffolded pedagogical guidance.</p>
+      </div>
+
+      <div class="step-card">
+        <div class="step-header">
+          <span class="step-number">6</span>
+          <span class="step-title">Restore &amp; Unlock</span>
+        </div>
+        <p class="step-text">Complete the goal to restore the Sky-Isle, earn a cosmetic reward, and unlock the next level.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PAGE 3: CURRICULUM ARC & REWARDS SYSTEM   -->
+  <!-- ========================================== -->
+  <div class="page-break"></div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">3</span> The 10 Levels (Curriculum)</h2>
+    <p>The curriculum advances systematically from basic linear sequences to complex integrated engineering systems, closely aligned with primary school cognitive development curves:</p>
+    
+    <table class="curriculum-table">
+      <thead>
+        <tr>
+          <th class="center">Level</th>
+          <th>Title</th>
+          <th>STEM Concept</th>
+          <th class="center">Block Budget</th>
+          <th>Cosmetic Reward</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="level-col">1</td>
+          <td class="title-col">Sky-Isle Cleanup</td>
+          <td class="concept-col">Logic</td>
+          <td class="budget-col">10</td>
+          <td class="reward-col">Leaf Antenna</td>
+        </tr>
+        <tr>
+          <td class="level-col">2</td>
+          <td class="title-col">Solar Panel Path</td>
+          <td class="concept-col">Sequencing &amp; Loops</td>
+          <td class="budget-col">6</td>
+          <td class="reward-col">Solar Visor</td>
+        </tr>
+        <tr>
+          <td class="level-col">3</td>
+          <td class="title-col">Water Wheel Village</td>
+          <td class="concept-col">Nested Loops</td>
+          <td class="budget-col">8</td>
+          <td class="reward-col">Water Wheel Wheels</td>
+        </tr>
+        <tr>
+          <td class="level-col">4</td>
+          <td class="title-col">Wind Farm Ridge</td>
+          <td class="concept-col">Energy Systems</td>
+          <td class="budget-col">10</td>
+          <td class="reward-col">Wind Turbine Hat</td>
+        </tr>
+        <tr>
+          <td class="level-col">5</td>
+          <td class="title-col">Recycling Plant Sort</td>
+          <td class="concept-col">Conditionals</td>
+          <td class="budget-col">10</td>
+          <td class="reward-col">Recycled Armor</td>
+        </tr>
+        <tr>
+          <td class="level-col">6</td>
+          <td class="title-col">Hydro Dam Hydraulics</td>
+          <td class="concept-col">Mathematical Modeling</td>
+          <td class="budget-col">12</td>
+          <td class="reward-col">Hydro Jetpack</td>
+        </tr>
+        <tr>
+          <td class="level-col">7</td>
+          <td class="title-col">Bridge Builder Canyon</td>
+          <td class="concept-col">Structural Engineering</td>
+          <td class="budget-col">12</td>
+          <td class="reward-col">Bridge Builder Boots</td>
+        </tr>
+        <tr>
+          <td class="level-col">8</td>
+          <td class="title-col">Compost Garden Sensors</td>
+          <td class="concept-col">Sensors &amp; Events</td>
+          <td class="budget-col">12</td>
+          <td class="reward-col">Compost Cape</td>
+        </tr>
+        <tr>
+          <td class="level-col">9</td>
+          <td class="title-col">Night Grid Balancer</td>
+          <td class="concept-col">Systems Thinking</td>
+          <td class="budget-col">14</td>
+          <td class="reward-col">Aurora Paint</td>
+        </tr>
+        <tr>
+          <td class="level-col">10</td>
+          <td class="title-col">Eco-City Master Mission</td>
+          <td class="concept-col">Integrated Engineering</td>
+          <td class="budget-col">16</td>
+          <td class="reward-col">Golden Gear Crown</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      <strong>Curriculum Implementation Note:</strong> Levels 1 and 2 are currently built and verified as Unity source; levels 3–10 are designed and defined in the curriculum (the full 10-level arc).
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">4</span> Rewards</h2>
+    <p>Eco-Bot Builders reinforces perseverance and collaborative achievement through multi-tiered reward systems designed specifically for primary students:</p>
+    
+    <div class="rewards-grid">
+      <div class="reward-card">
+        <div class="reward-card-header">
+          <div class="reward-icon cosmetic">&#9733;</div>
+          <div class="reward-title">Cosmetic Rewards</div>
+        </div>
+        <p class="reward-body">Completing a level for the first time unlocks a cosmetic item to customize the Eco-Bot (see the table in Section 3). The final level (10) grants the prestige <strong>"Golden Gear Crown."</strong></p>
+      </div>
+
+      <div class="reward-card">
+        <div class="reward-card-header">
+          <div class="reward-icon token">&#9889;</div>
+          <div class="reward-title">Clean Tokens &amp; Community Progress</div>
+        </div>
+        <p class="reward-body">Students earn "Clean Tokens" as they play. The whole class works together toward a shared Community goal of <strong>1,000 Clean Tokens</strong> to "power the town" (100% community progress) — encouraging collaboration, not just competition.</p>
+      </div>
+
+      <div class="reward-card">
+        <div class="reward-card-header">
+          <div class="reward-icon progression">&#10003;</div>
+          <div class="reward-title">Progression &amp; Unlocking</div>
+        </div>
+        <p class="reward-body">Progress is saved on the device; each completed level unlocks the next, so students always have a clear next goal to pursue at their own individual pace.</p>
+      </div>
+
+      <div class="reward-card">
+        <div class="reward-card-header">
+          <div class="reward-icon certificate">&#128221;</div>
+          <div class="reward-title">Completion Certificate</div>
+        </div>
+        <p class="reward-body">Teachers can generate a printable PDF completion certificate for students to celebrate curriculum mastery, persistence, and environmental problem-solving.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PAGE 4: STEM COMPETENCIES & HINT SYSTEM    -->
+  <!-- ========================================== -->
+  <div class="page-break"></div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">5</span> STEM Competencies Tracked</h2>
+    <p>The game tracks a 4-axis STEM competency profile per student, displayed in the classroom portal as a comprehensive radar chart:</p>
+
+    <div class="competencies-grid">
+      <div class="comp-item">
+        <div class="comp-name">Computational Thinking</div>
+        <p class="comp-detail">Algorithms, sequences, loops, conditionals, and logical problem decomposition.</p>
+        <span class="comp-code">CSTA 1B-AP-08, 1B-AP-10</span>
+      </div>
+
+      <div class="comp-item">
+        <div class="comp-name">Systemic Engineering</div>
+        <p class="comp-detail">Decomposition, structural subsystems, and hardware/software models.</p>
+        <span class="comp-code">CSTA 1B-AP-11, 1B-CS-02</span>
+      </div>
+
+      <div class="comp-item">
+        <div class="comp-name">Mathematical Modeling</div>
+        <p class="comp-detail">Variables, rate calculations, and cause-and-effect input/output relationship models.</p>
+        <span class="comp-code">CSTA 1B-AP-09, 1B-DA-07</span>
+      </div>
+
+      <div class="comp-item">
+        <div class="comp-name">Persistence &amp; Debugging</div>
+        <p class="comp-detail">Iterative code modification, systematic bug isolation, and resilient retry behavior.</p>
+        <span class="comp-code">CSTA 1B-AP-13, 1B-AP-15</span>
+      </div>
+    </div>
+
+    <div class="stem-badges">
+      <div>
+        <span class="stem-badge-tag">Achievement Threshold</span>
+        A competency counts as "achieved" when the average score reaches <strong>0.6 (60%)</strong> or higher across level attempts.
+      </div>
+      <div>
+        <span class="stem-badge-tag">Curriculum Alignment</span>
+        CSTA K-12 Computer Science Standards (Level 1B, ages 8–11) &amp; NGSS Science &amp; Engineering Practices.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">6</span> Adaptive Hint System</h2>
+    <p>A 3-tier scaffolded hint system helps students who are stuck, without just giving the answer:</p>
+
+    <div class="hints-grid">
+      <div class="hint-card t1">
+        <div class="hint-tier-tag">Tier 1</div>
+        <div class="hint-tier-name">Observational</div>
+        <p class="hint-body">Gently points attention to what matters in the current puzzle state (e.g., <em>"Watch where your bot is facing!"</em>).</p>
+      </div>
+
+      <div class="hint-card t2">
+        <div class="hint-tier-tag">Tier 2</div>
+        <div class="hint-tier-name">Conceptual</div>
+        <p class="hint-body">Explains the underlying logic idea (e.g., <em>"A Repeat block runs the blocks inside it again and again."</em>).</p>
+      </div>
+
+      <div class="hint-card t3">
+        <div class="hint-tier-tag">Tier 3</div>
+        <div class="hint-tier-name">Interactive</div>
+        <p class="hint-body">Provides an interactive on-screen tool or demo (e.g., loop-unroll visualizer, decision-tree builder, flow-rate simulator).</p>
+      </div>
+    </div>
+
+    <div class="hint-note">
+      <strong>Scaffolding Protocol:</strong> Hints appear after a student retries several times (a configured "stuck" threshold), supporting persistence while preserving the joy of independent problem-solving.
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PAGE 5: TEACHER FEATURES & TECH SNAPSHOT   -->
+  <!-- ========================================== -->
+  <div class="page-break"></div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">7</span> Features for Teachers (Classroom Platform)</h2>
+    <p>Eco-Bot Builders is classroom-ready. The platform has three integrated parts: the <strong>Unity student game</strong>, a <strong>Node.js backend</strong>, and a <strong>React teacher dashboard</strong>. Teacher-facing features include:</p>
+
+    <div class="teacher-container">
+      <div class="teacher-features-list">
+        <div class="teacher-item">
+          <div class="teacher-item-title">&#128273; Classroom Rooms &amp; Easy Join</div>
+          <p class="teacher-item-desc">Create a room with a 4-digit PIN (and QR code); students join directly from the game using the PIN and their name.</p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-item-title">&#128225; Live HUD &amp; Activity Stream</div>
+          <p class="teacher-item-desc">Real-time view of the class: students online, a Live Activity ticker, and the Community Progress bar toward the 1,000 Clean Token goal.</p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-item-title">&#128680; Student Roster &amp; "Needs Help" Alerts</div>
+          <p class="teacher-item-desc">Live status badges show who is progressing smoothly and who is stuck, enabling timely teacher interventions.</p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-item-title">&#128202; STEM Competency Radar</div>
+          <p class="teacher-item-desc">Class-average 4-axis radar chart displaying group strengths across Computational Thinking, Modeling, and Persistence.</p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-item-title">&#127918; Classroom Controls</div>
+          <p class="teacher-item-desc">One-click teacher overrides: Pause Class / Eyes Up, Mute Audio, Refresh Roster, and View Analytics.</p>
+        </div>
+
+        <div class="teacher-item">
+          <div class="teacher-item-title">&#128196; Exports &amp; Certified Reports</div>
+          <p class="teacher-item-desc">Download CSV report for gradebooks and Generate printable PDF completion certificates for student portfolios.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-preview-box">
+        <img src="github_repos/STEM-APS-UniMAP/docs/assets/teacher-dashboard.png" alt="Teacher Dashboard Live Screen" class="dashboard-img">
+        <div class="dashboard-caption">Figure 2: Real-time Teacher Dashboard showing 4-digit Room PIN (3881), Clean Energy Goal, and STEM Competencies Radar.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2 class="section-title"><span class="section-title-badge">8</span> Technical Snapshot</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-card-header">Student Game Client</div>
+        <p class="tech-card-content"><strong>Unity 2022.3 LTS</strong> (Universal Render Pipeline, URP), written in C#. Cross-platform compatibility covering Windows desktop, Android tablets/emulators, and classroom interactive screens.</p>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-card-header">Backend Service</div>
+        <p class="tech-card-content"><strong>Node.js &amp; Express</strong> server with <strong>Socket.io</strong> for real-time telemetry streaming and <strong>MongoDB</strong> schema validation for session rosters, telemetry events, and progress metrics.</p>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-card-header">Teacher Dashboard</div>
+        <p class="tech-card-content"><strong>React 18</strong> web application with <strong>Recharts</strong> for responsive competency radar charts, <strong>jsPDF</strong> for instant certificate generation, and <strong>socket.io-client</strong> for low-latency live sync.</p>
+      </div>
+    </div>
+
+    <div class="callout-box">
+      <div class="callout-text">
+        <strong>Standalone &amp; Networked Play:</strong> Levels 1 and 2 ship as offline, self-contained Unity gameplay (no internet or PIN required to play); the classroom/telemetry platform is for teacher-run sessions. Source code and documentation live in the project's GitHub repository.
+      </div>
+      <span class="repo-pill">STEM-APS-UniMAP</span>
+    </div>
+  </div>
+
+</body>
+</html>
